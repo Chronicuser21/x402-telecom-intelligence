@@ -277,8 +277,30 @@ async def well_known_manifest():
     return JSONResponse(content={"error": "manifest not found"}, status_code=404)
 
 
+@app.get("/", response_class=FileResponse, tags=["Discovery"])
+async def landing_page():
+    """Serve the main landing page."""
+    landing_path = Path(__file__).parent.parent / "static" / "index.html"
+    if landing_path.exists():
+        return FileResponse(landing_path, media_type="text/html")
+    # Fallback to simple info if landing page doesn't exist
+    return JSONResponse(content={
+        "name": "Telecom SIP Intelligence for AI Agents",
+        "description": "Specialized telecom/SIP intelligence tools for AI agents in NOC operations, VoIP monitoring, and telecom automation.",
+        "endpoints": {
+            "health": "/api/v1/tools/health",
+            "catalog": "/api/v1/tools/list-products",
+            "phone_normalize": "/api/v1/tools/phone-normalize (FREE)",
+            "sip_decode": "/api/v1/tools/sip-decode ($0.01)",
+            "call_diagnose": "/api/v1/tools/call-diagnose ($0.02)",
+            "phone_info": "/api/v1/tools/phone-info ($0.005)"
+        },
+        "documentation": "/docs",
+        "x402_manifest": "/x402.json"
+    })
+
+
 @app.get("/.well-known/x402", tags=["Discovery"])
-async def well_known_x402():
     """x402 discovery path without .json suffix (used by crawlers and agents)."""
     manifest_path = Path(__file__).parent.parent / "x402.json"
     if manifest_path.exists():

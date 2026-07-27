@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Telecom SIP Intelligence for AI Agents</title>
+    <meta name="description" content="Specialized telecom/SIP intelligence tools for AI agents in NOC operations, VoIP monitoring, and telecom automation.">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+            line-height: 1.6;
+            background: #0a0e17;
+            color: #e2e8f0;
+        }
+        h1 { color: #3b82f6; }
+        .endpoint {
+            background: #111827;
+            padding: 1rem;
+            margin: 0.5rem 0;
+            border-radius: 8px;
+            border-left: 4px solid #3b82f6;
+        }
+        .free { border-left-color: #10b981; }
+        .paid { border-left-color: #f59e0b; }
+        code {
+            background: #1e293b;
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        a { color: #3b82f6; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <h1>🤖 Telecom SIP Intelligence for AI Agents</h1>
+    <p>Specialized telecom/SIP intelligence tools for AI agents in NOC operations, VoIP monitoring, and telecom automation.</p>
+    
+    <h2>Available Endpoints</h2>
+    
+    <div class="endpoint free">
+        <h3>🎁 <strong>FREE</strong> - Phone Normalization</h3>
+        <p><code>POST /api/v1/tools/phone-normalize</code></p>
+        <p>Validate and normalize phone numbers to E.164 format. Detect line types (mobile, landline, toll-free) and country codes.</p>
+    </div>
+    
+    <div class="endpoint paid">
+        <h3>💰 $0.01 - SIP Decode</h3>
+        <p><code>POST /api/v1/tools/sip-decode</code></p>
+        <p>Parse SIP protocol messages into structured JSON with telecom domain expertise.</p>
+    </div>
+    
+    <div class="endpoint paid">
+        <h3>💰 $0.02 - Call Diagnose</h3>
+        <p><code>POST /api/v1/tools/call-diagnose</code></p>
+        <p>Analyze SIP traces to diagnose VoIP call failures with specialized telecom expertise.</p>
+    </div>
+    
+    <div class="endpoint paid">
+        <h3>💰 $0.005 - Phone Info</h3>
+        <p><code>POST /api/v1/tools/phone-info</code></p>
+        <p>Get comprehensive phone number information including carrier detection and line type analysis.</p>
+    </div>
+    
+    <h2>Quick Test</h2>
+    <p>Try the free endpoint:</p>
+    <pre><code>curl -X POST https://your-render-url.onrender.com/api/v1/tools/phone-normalize \
+  -H "Content-Type: application/json" \
+  -d '{"raw_string": "+14155552671", "region": "US"}'</code></pre>
+    
+    <h2>Documentation</h2>
+    <ul>
+        <li><a href="/docs">API Documentation</a></li>
+        <li><a href="/api/v1/tools/list-products">Service Catalog</a></li>
+        <li><a href="/api/v1/tools/health">Health Check</a></li>
+        <li><a href="/x402.json">x402 Manifest</a></li>
+    </ul>
+    
+    <h2>Use Cases</h2>
+    <ul>
+        <li>NOC automation for SIP trace analysis and call failure troubleshooting</li>
+        <li>VoIP monitoring with automated SIP message parsing and alerting</li>
+        <li>Telecom technical support with SIP protocol expertise and diagnostics</li>
+        <li>Call center automation with phone validation and carrier detection</li>
+    </ul>
+</body>
+</html>
