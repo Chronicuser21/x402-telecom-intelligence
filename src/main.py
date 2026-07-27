@@ -137,6 +137,7 @@ routes_config: dict[str, RouteConfig] = {
         extensions=declare_discovery_extension(
             input={"rawSipMessage": "INVITE sip:bob@biloxi.com SIP/2.0..."},
             input_schema={
+                "type": "object",
                 "properties": {
                     "rawSipMessage": {"type": "string", "description": "Raw SIP header string content"}
                 },
@@ -165,6 +166,7 @@ routes_config: dict[str, RouteConfig] = {
         extensions=declare_discovery_extension(
             input={"sipTrace": "INVITE ... \nSIP/2.0 487 Request Terminated"},
             input_schema={
+                "type": "object",
                 "properties": {
                     "sipTrace": {"type": "string", "description": "Sequential SIP trace lines tied to a singular Call-ID"}
                 },
@@ -193,6 +195,7 @@ routes_config: dict[str, RouteConfig] = {
         extensions=declare_discovery_extension(
             input={"phone_number": "+14155552671", "region": "US"},
             input_schema={
+                "type": "object",
                 "properties": {
                     "phone_number": {"type": "string", "description": "Raw phone number string"},
                     "region": {"type": "string", "description": "ISO country code hint (default: US)"}
@@ -223,6 +226,7 @@ routes_config: dict[str, RouteConfig] = {
         extensions=declare_discovery_extension(
             input={"call_patterns": [{"status": "success", "destination": "+1234567890"}]},
             input_schema={
+                "type": "object",
                 "properties": {
                     "call_patterns": {"type": "array", "items": {"type": "object"}, "description": "List of call records for fraud analysis"},
                     "analysis_window": {"type": "string", "description": "Time window for analysis (default: 1h)"},
@@ -254,6 +258,7 @@ routes_config: dict[str, RouteConfig] = {
         extensions=declare_discovery_extension(
             input={"call_records": [{"status": "success", "cost": 0.05}]},
             input_schema={
+                "type": "object",
                 "properties": {
                     "call_records": {"type": "array", "items": {"type": "object"}, "description": "Call records with duration, status, and cost"},
                     "analysis_period": {"type": "string", "description": "Analysis period: daily, weekly, monthly (default: daily)"},

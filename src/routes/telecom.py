@@ -1056,7 +1056,8 @@ async def sip_decode(payload: SipDecodeRequest):
                                   "global_failure" if 600 <= status_code < 700 else "unknown"
 
     # Add SDP analysis if body contains SDP content
-    if body and "application/sdp" in str(body).lower():
+    content_type = headers.get("Content-Type", headers.get("c", ""))
+    if body and ("application/sdp" in str(content_type).lower() or "v=0" in str(body).lower()):
         sdp_analysis = analyze_sdp_content(body)
         result["sdp_analysis"] = sdp_analysis
 
