@@ -301,6 +301,7 @@ async def landing_page():
 
 
 @app.get("/.well-known/x402", tags=["Discovery"])
+async def well_known_x402():
     """x402 discovery path without .json suffix (used by crawlers and agents)."""
     manifest_path = Path(__file__).parent.parent / "x402.json"
     if manifest_path.exists():
