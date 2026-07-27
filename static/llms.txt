@@ -1,0 +1,207 @@
+# Telecom SIP Intelligence for AI Agents
+
+> Specialized telecom/SIP intelligence tools for AI agents in NOC operations, VoIP monitoring, and telecom automation.
+
+## What this service does for Telecom AI Agents
+
+This server provides specialized telecom/SIP intelligence tools for AI agents working in Network Operations Centers (NOC), VoIP monitoring, and telecom automation. Parse SIP messages, diagnose call failures, validate phone numbers, and analyze telecom protocols with domain expertise.
+
+## Target AI Agents
+
+**Primary Target:**
+- NOC automation agents for SIP trace analysis and call failure troubleshooting
+- VoIP monitoring agents for automated SIP message parsing and alerting
+- Telecom technical support agents with SIP protocol expertise
+- Network operations agents for telecom protocol analysis
+- Incident response agents for VoIP service outages
+
+**Compatible Platforms:**
+- FreeSWITCH, Asterisk, Kamailio, OpenSIPS
+- Cisco CallManager, Avaya, Genesys
+- Nagios, Zabbix, Prometheus, Grafana
+- Elastic Stack, Splunk
+
+## Agent Integration
+
+**Supported Frameworks:** LangChain, AutoGPT, CrewAI, OpenAI Functions, Anthropic Tools
+
+**Telecom Use Cases:**
+- NOC automation for SIP trace analysis and call failure troubleshooting
+- VoIP monitoring with automated SIP message parsing and alerting
+- Telecom technical support with SIP protocol expertise and diagnostics
+- Call center automation with phone validation and carrier detection
+- Network operations automation with telecom protocol analysis
+- Incident response automation for VoIP service outages
+
+## Discovery
+
+- x402 manifest: https://x402-telecom-intelligence.onrender.com/x402.json
+- Well-known path: https://x402-telecom-intelligence.onrender.com/.well-known/x402.json
+- Service catalog: https://x402-telecom-intelligence.onrender.com/api/v1/tools/list-products
+- Health check: https://x402-telecom-intelligence.onrender.com/api/v1/tools/health
+
+## Payment & Pricing
+
+**Tiered Pricing Model** (Industry-standard like Twilio):
+- **FREE**: phone-normalize - Basic validation and normalization (no payment required)
+- **Advanced ($0.01)**: sip-decode - SIP protocol parsing with telecom domain expertise
+- **Advanced ($0.005)**: phone-info - Carrier detection and line type analysis
+- **Premium ($0.02)**: call-diagnose - VoIP call diagnostics with specialized expertise
+
+No daily limits. phone-normalize is completely free like Twilio's basic lookup.
+
+- Network: Base Mainnet (eip155:8453)
+- Asset: USDC (0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913)
+- Facilitator: https://api.cdp.coinbase.com/platform/v2/x402
+- Pay to: 0xD333941784201caC6C3c082D9BEef22EFefe4750
+
+## Tools (Free - No Payment Required)
+
+### GET /api/v1/tools/health
+System uptime, facilitator connectivity, and service status.
+
+### GET /api/v1/tools/list-products
+Full catalog of all available tools with pricing, input schemas, and descriptions.
+
+## Tools (Free & Paid via x402)
+
+### POST /api/v1/tools/phone-normalize — FREE
+**When to use:** When NOC agents need to validate phone numbers in call detail records, telecom agents need to format numbers for international routing, or monitoring agents need to detect line types for call analysis. **Completely free - no payment required.**
+
+Input:
+```json
+{"raw_string": "+14155552671", "region": "US", "target_format": "e164"}
+```
+
+Output:
+```json
+{"status": "success", "valid": true, "line_type_hint": "MOBILE", "formatted_result": "+14155552671", "country_code": "1", "possible_regions": ["US", "CA"]}
+```
+
+### POST /api/v1/tools/sip-decode — $0.01 USDC
+**When to use:** When NOC agents need to parse SIP messages from telecom logs, VoIP monitoring agents need to extract SIP headers for analysis, or telecom automation agents need to integrate with SIP-based systems.
+
+Input:
+```json
+{"rawSipMessage": "INVITE sip:bob@biloxi.com SIP/2.0\r\nVia: SIP/2.0/UDP pc33.atlanta.com\r\n..."}
+```
+
+Output:
+```json
+{"status": "success", "data": {"method": "INVITE", "uri": "sip:bob@biloxi.com", "headers": {"From": "Alice", "To": "Bob"}}}
+```
+
+### POST /api/v1/tools/call-diagnose — $0.02 USDC
+**When to use:** When NOC agents need to analyze call failures in SIP traces, telecom technical support agents need to troubleshoot VoIP issues, or incident response agents need to diagnose VoIP service outages.
+
+Input:
+```json
+{"sipTrace": "INVITE sip:alice@atlanta.com SIP/2.0\n...\nSIP/2.0 487 Request Terminated"}
+```
+
+Output:
+```json
+{"status": "success", "data": {"assessment": "SUCCESS", "hypotheses": [{"hypothesis": "Normal user hangup", "severity": "info", "remediation": "No fix required"}]}}
+```
+
+### POST /api/v1/tools/phone-info — $0.005 USDC
+**When to use:** When NOC agents need carrier information for call routing analysis, telecom monitoring agents need to detect premium rate numbers for fraud detection, or call center agents need phone intelligence for routing decisions.
+
+Input:
+```json
+{"phone_number": "+14155552671", "region": "US"}
+```
+
+Output:
+```json
+{"status": "success", "phone_analysis": {"e164": "+14155552671", "line_type": "MOBILE", "carrier": {"name": "Mobile Carrier (US/CA)", "type": "mobile", "confidence": "high"}}}
+```
+
+## Agent Error Handling
+
+**402 Payment Required:** Log telecom monitoring event and retry with alternative NOC data source
+**422 Validation Error:** Clean SIP data or phone number format and retry with telecom validation
+**500 Server Error:** Retry with exponential backoff for telecom service reliability
+
+**Retry Policy:** Max 3 retries with backoff: 1s, 5s, 15s (standard NOC retry patterns)
+
+## Telecom Integration Examples
+
+### NOC Automation Agent (LangChain)
+```python
+from langchain.tools import Tool
+
+def analyze_sip_trace(raw_sip_message: str) -> dict:
+    """Parse SIP message for NOC automation and call failure analysis."""
+    response = requests.post(
+        "https://asahi-1.tail779e35.ts.net/api/v1/tools/sip-decode",
+        json={"rawSipMessage": raw_sip_message},
+        headers={"X-Payment": "<x402_payment>"}
+    )
+    return response.json()["data"]
+
+def diagnose_call_failure(sip_trace: str) -> dict:
+    """Analyze SIP trace for NOC incident response and troubleshooting."""
+    response = requests.post(
+        "https://asahi-1.tail779e35.ts.net/api/v1/tools/call-diagnose",
+        json={"sipTrace": sip_trace},
+        headers={"X-Payment": "<x402_payment>"}
+    )
+    return response.json()["data"]
+
+sip_tool = Tool(
+    name="sip_decode",
+    func=analyze_sip_trace,
+    description="Parse SIP messages from telecom logs for NOC automation and VoIP monitoring"
+)
+
+diagnose_tool = Tool(
+    name="call_diagnose",
+    func=diagnose_call_failure,
+    description="Analyze SIP traces for call failure troubleshooting and incident response"
+)
+```
+
+### VoIP Monitoring Agent (OpenAI Functions)
+```python
+functions = [
+    {
+        "name": "sip_decode",
+        "description": "Parse SIP protocol messages from telecom logs for VoIP monitoring",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "rawSipMessage": {
+                    "type": "string",
+                    "description": "Raw SIP message from telecom logs or monitoring systems"
+                }
+            },
+            "required": ["rawSipMessage"]
+        }
+    },
+    {
+        "name": "call_diagnose",
+        "description": "Analyze SIP traces for call failure diagnosis in NOC operations",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "sipTrace": {
+                    "type": "string",
+                    "description": "SIP trace from call detail records or monitoring systems"
+                }
+            },
+            "required": ["sipTrace"]
+        }
+    }
+]
+```
+
+## How to pay (x402 flow)
+
+1. Call a paid endpoint — receive HTTP 402 with `PAYMENT-REQUIRED` header
+2. Decode the header to get payment amount, network, asset, and payTo address
+3. Submit a signed USDC transaction on Base Mainnet
+4. Retry the request with the `X-PAYMENT` header containing the encoded payment
+5. Receive the result with `PAYMENT-RESPONSE` header confirming settlement
+
+Use the official x402 Python SDK: `pip install x402`

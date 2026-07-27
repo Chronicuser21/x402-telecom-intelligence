@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Telecom Intelligence API - Documentation</title>
+<style>
+  :root {
+    --bg: #0a0e17;
+    --card: #111827;
+    --border: #1e293b;
+    --accent: #3b82f6;
+    --accent2: #10b981;
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+  }
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+  .header {
+    text-align: center;
+    padding: 3rem 0;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 2rem;
+  }
+  .header h1 {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+    color: var(--accent);
+  }
+  .header p {
+    color: var(--muted);
+    font-size: 1.1rem;
+  }
+  .badges {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    margin-top: 1rem;
+  }
+  .badge {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--muted);
+  }
+  .badge.free { border-color: var(--accent2); color: var(--accent2); }
+  .section {
+    margin-bottom: 3rem;
+  }
+  .section h2 {
+    font-size: 1.8rem;
+    margin-bottom: 1rem;
+    color: var(--accent);
+  }
+  .section h3 {
+    font-size: 1.3rem;
+    margin-bottom: 0.75rem;
+    margin-top: 1.5rem;
+    color: var(--text);
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+  }
+  .price {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--accent2);
+  }
+  .price.free { color: var(--accent2); }
+  .price.paid { color: var(--accent); }
+  code {
+    background: rgba(59, 130, 246, 0.1);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 0.2rem 0.4rem;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 0.9em;
+  }
+  pre {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem;
+    overflow-x: auto;
+    margin: 1rem 0;
+  }
+  pre code {
+    background: none;
+    border: none;
+    padding: 0;
+  }
+  .endpoint {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+  }
+  .method {
+    font-weight: 700;
+    padding: 0.25rem 0.75rem;
+    border-radius: 4px;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+  }
+  .method.get { background: rgba(59, 130, 246, 0.2); color: var(--accent); }
+  .method.post { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+  .table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+  }
+  .table th, .table td {
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  .table th {
+    color: var(--muted);
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+  }
+  .use-case {
+    background: var(--card);
+    border-left: 3px solid var(--accent);
+    padding: 1rem 1.5rem;
+    margin-bottom: 1rem;
+  }
+  .use-case h4 {
+    color: var(--accent);
+    margin-bottom: 0.5rem;
+  }
+  .comparison {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1rem;
+    margin: 1rem 0;
+  }
+  .comparison-item {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem;
+  }
+  .comparison-item.ours {
+    border-color: var(--accent2);
+  }
+  .comparison-item h4 {
+    margin-bottom: 0.5rem;
+  }
+  .comparison-item.ours h4 {
+    color: var(--accent2);
+  }
+  .nav {
+    position: sticky;
+    top: 0;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    padding: 1rem 0;
+    z-index: 100;
+  }
+  .nav ul {
+    list-style: none;
+    display: flex;
+    gap: 2rem;
+    justify-content: center;
+  }
+  .nav a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 0.9rem;
+  }
+  .nav a:hover {
+    color: var(--accent);
+  }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <ul>
+    <li><a href="#overview">Overview</a></li>
+    <li><a href="#endpoints">Endpoints</a></li>
+    <li><a href="#use-cases">Use Cases</a></li>
+    <li><a href="#pricing">Pricing</a></li>
+    <li><a href="#examples">Examples</a></li>
+  </ul>
+</nav>
+
+<div class="container">
+  <div class="header">
+    <h1>Telecom Intelligence API</h1>
+    <p>Professional-grade SIP parsing, phone validation, and VoIP diagnostics for developers</p>
+    <div class="badges">
+      <span class="badge free">🎁 50 Free Calls/Day</span>
+      <span class="badge">📡 SIP Protocol</span>
+      <span class="badge">📱 Phone Validation</span>
+      <span class="badge">🔍 Call Diagnostics</span>
+    </div>
+  </div>
+
+  <div class="section" id="overview">
+    <h2>Overview</h2>
+    <p>The Telecom Intelligence API provides telecom developers with professional-grade tools for SIP protocol analysis, phone number validation, and VoIP call diagnostics. Built for telecom engineers, VoIP developers, and communication platforms.</p>
+    
+    <div class="card">
+      <h3>🎁 Free Tier for Development</h3>
+      <p>First <strong>25 calls per day</strong> are completely free. No credit card, no signup required. Perfect for testing, development, and small-scale applications.</p>
+    </div>
+
+    <div class="card">
+      <h3>⚡ Production-Ready at Scale</h3>
+      <p>Pay only for what you use with our ultra-low pricing. Built for production workloads with 99.9% uptime and sub-50ms response times.</p>
+    </div>
+  </div>
+
+  <div class="section" id="endpoints">
+    <h2>API Endpoints</h2>
+    
+    <div class="card">
+      <div class="endpoint">
+        <span class="method post">POST</span>
+        <code>/api/v1/tools/phone-normalize</code>
+        <span class="price free">$0.001</span>
+      </div>
+      <p>Normalize raw phone strings into standardized formats (E.164, international, national, RFC3966 URI). Includes line type detection (mobile, landline, toll-free).</p>
+      <pre><code>// Input
+{
+  "raw_string": "+14155552671",
+  "region": "US",
+  "target_format": "e164"
+}
+
+// Output
+{
+  "status": "success",
+  "valid": true,
+  "line_type_hint": "MOBILE",
+  "formatted_result": "+14155552671"
+}</code></pre>
+    </div>
+
+    <div class="card">
+      <div class="endpoint">
+        <span class="method post">POST</span>
+        <code>/api/v1/tools/sip-decode</code>
+        <span class="price paid">$0.005</span>
+      </div>
+      <p>Parse raw SIP messages into structured JSON. Handles RFC 3261 compact headers, folded headers, multi-value headers, and both request/response messages.</p>
+      <pre><code>// Input
+{
+  "rawSipMessage": "INVITE sip:bob@biloxi.com SIP/2.0\r\nVia: SIP/2.0/UDP pc33.atlanta.com\r\nFrom: Alice"
+}
+
+// Output
+{
+  "status": "success",
+  "data": {
+    "type": "request",
+    "method": "INVITE",
+    "uri": "sip:bob@biloxi.com",
+    "headers": {
+      "Via": "SIP/2.0/UDP pc33.atlanta.com",
+      "From": "Alice"
+    }
+  }
+}</code></pre>
+    </div>
+
+    <div class="card">
+      <div class="endpoint">
+        <span class="method post">POST</span>
+        <code>/api/v1/tools/call-diagnose</code>
+        <span class="price paid">$0.01</span>
+      </div>
+      <p>Automated forensics analyzer for VoIP call failures. Analyzes SIP traces and provides ranked diagnostic hypotheses with remediation steps.</p>
+      <pre><code>// Input
+{
+  "sipTrace": "INVITE sip:alice@atlanta.com SIP/2.0\n...\nSIP/2.0 487 Request Terminated"
+}
+
+// Output
+{
+  "status": "success",
+  "data": {
+    "assessment": "NORMAL",
+    "hypotheses": [
+      "Normal call termination — one side cancelled the request before the far end answered."
+    ],
+    "remediation": "No infrastructure fix required. If unintended, check application logic that triggers CANCEL."
+  }
+}</code></pre>
+    </div>
+
+    <div class="card">
+      <div class="endpoint">
+        <span class="method get">GET</span>
+        <code>/api/v1/tools/free-tier-status</code>
+        <span class="price free">FREE</span>
+      </div>
+      <p>Check your current free tier usage and remaining calls.</p>
+    </div>
+  </div>
+
+  <div class="section" id="use-cases">
+    <h2>Use Cases</h2>
+    
+    <div class="use-case">
+      <h4>📱 Phone Number Validation</h4>
+      <p>Validate user phone numbers during registration, normalize formats for SMS delivery, detect line types for routing decisions, and ensure E.164 compliance for international calling.</p>
+    </div>
+
+    <div class="use-case">
+      <h4>📡 SIP Protocol Debugging</h4>
+      <p>Parse SIP messages for logging, debugging VoIP interconnection issues, analyzing SIP traces from production systems, and building SIP-aware monitoring tools.</p>
+    </div>
+
+    <div class="use-case">
+      <h4>🔍 Call Failure Analysis</h4>
+      <p>Automatically diagnose call failures, identify root causes of dropped calls, troubleshoot VoIP quality issues, and reduce mean time to resolution for telecom support teams.</p>
+    </div>
+
+    <div class="use-case">
+      <h4>🏢 Enterprise Communication Platforms</h4>
+      <p>Power PBX systems, contact center software, team collaboration apps, and enterprise telephony solutions with reliable telecom intelligence.</p>
+    </div>
+  </div>
+
+  <div class="section" id="pricing">
+    <h2>Pricing</h2>
+    
+    <div class="card">
+      <h3>🎁 Free Tier</h3>
+      <p><strong>25 calls per day</strong> completely free. No credit card required. Perfect for development, testing, and small-scale applications.</p>
+    </div>
+
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Endpoint</th>
+          <th>Price per Call</th>
+          <th>Free Tier</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Phone Normalize</td>
+          <td>$0.001</td>
+          <td>✅ 50/day</td>
+        </tr>
+        <tr>
+          <td>SIP Decode</td>
+          <td>$0.005</td>
+          <td>✅ 50/day</td>
+        </tr>
+        <tr>
+          <td>Call Diagnose</td>
+          <td>$0.01</td>
+          <td>✅ 50/day</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="comparison">
+      <div class="comparison-item">
+        <h4>Traditional APIs</h4>
+        <ul>
+          <li>$0.01 - $0.05 per call</li>
+          <li>No free tier</li>
+          <li>Monthly minimums</li>
+          <li>Complex pricing tiers</li>
+        </ul>
+      </div>
+      <div class="comparison-item ours">
+        <h4>Our API</h4>
+        <ul>
+          <li>$0.001 - $0.01 per call</li>
+          <li>50 free calls/day</li>
+          <li>No minimums</li>
+          <li>Simple pay-per-call</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="section" id="examples">
+    <h2>Code Examples</h2>
+    
+    <h3>Python</h3>
+    <pre><code>import requests
+
+# Check free tier status
+response = requests.get("https://asahi-1.tail779e35.ts.net/api/v1/tools/free-tier-status")
+print(response.json())
+
+# Normalize a phone number
+response = requests.post(
+    "https://asahi-1.tail779e35.ts.net/api/v1/tools/phone-normalize",
+    json={"raw_string": "+14155552671", "region": "US", "target_format": "e164"}
+)
+print(response.json())</code></pre>
+
+    <h3>JavaScript/Node.js</h3>
+    <pre><code>// Check free tier status
+const response = await fetch('https://asahi-1.tail779e35.ts.net/api/v1/tools/free-tier-status');
+const data = await response.json();
+console.log(data);
+
+// Normalize a phone number
+const response = await fetch('https://asahi-1.tail779e35.ts.net/api/v1/tools/phone-normalize', {
+  method: 'POST',
+  headers: {'Content-Type': 'application/json'},
+  body: JSON.stringify({
+    raw_string: '+14155552671',
+    region: 'US',
+    target_format: 'e164'
+  })
+});
+const data = await response.json();
+console.log(data);</code></pre>
+
+    <h3>cURL</h3>
+    <pre><code># Check free tier status
+curl https://asahi-1.tail779e35.ts.net/api/v1/tools/free-tier-status
+
+# Normalize a phone number
+curl -X POST https://asahi-1.tail779e35.ts.net/api/v1/tools/phone-normalize \
+  -H "Content-Type: application/json" \
+  -d '{"raw_string": "+14155552671", "region": "US", "target_format": "e164"}'</code></pre>
+  </div>
+
+  <div class="section">
+    <h2>Getting Started</h2>
+    <ol>
+      <li><strong>Start with the free tier:</strong> No signup required. Your first 25 calls each day are free.</li>
+      <li><strong>Test the endpoints:</strong> Use the code examples above to integrate with your application.</li>
+      <li><strong>Monitor usage:</strong> Check <code>/api/v1/tools/free-tier-status</code> to track your usage.</li>
+      <li><strong>Scale when ready:</strong> When you exceed the free tier, calls are billed at ultra-low rates.</li>
+    </ol>
+  </div>
+
+  <div class="section">
+    <h2>Support</h2>
+    <p>For technical support, questions, or enterprise inquiries, please visit our <a href="https://github.com/nicepkg/x402-agent-service" style="color: var(--accent);">GitHub repository</a>.</p>
+  </div>
+</div>
+
+</body>
+</html>

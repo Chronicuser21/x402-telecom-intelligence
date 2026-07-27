@@ -1,0 +1,188 @@
+{
+  "$schema": "https://x402.org/schema/x402-manifest-v1.json",
+  "name": "Telecom SIP Intelligence for AI Agents",
+  "description": "Specialized telecom/SIP intelligence tools for AI agents in NOC operations, VoIP monitoring, and telecom automation. Parse SIP messages, diagnose call failures, validate phone numbers, and analyze telecom protocols. Essential for NOC automation agents, telecom technical support agents, and VoIP monitoring systems.",
+  "version": "1.0.0",
+  "baseUrl": "https://x402-telecom-intelligence.onrender.com",
+  "contact": {
+    "name": "x402-agent-service",
+    "url": "https://github.com/nicepkg/x402-agent-service"
+  },
+  "network": "eip155:8453",
+  "asset": {
+    "name": "USDC",
+    "symbol": "USDC",
+    "address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+    "decimals": 6
+  },
+  "payTo": "0xD333941784201caC6C3c082D9BEef22EFefe4750",
+  "facilitator": "https://api.cdp.coinbase.com/platform/v2/x402",
+  "endpoints": [
+    {
+      "path": "/api/v1/tools/list-products",
+      "method": "GET",
+      "description": "Free catalog of available telecom intelligence forensic endpoints.",
+      "price": "$0.00",
+      "tags": ["discovery", "catalog", "free"]
+    },
+    {
+      "path": "/api/v1/tools/health",
+      "method": "GET",
+      "description": "System uptime health checks and service status.",
+      "price": "$0.00",
+      "tags": ["status", "health", "free"]
+    },
+    {
+      "path": "/api/v1/tools/phone-normalize",
+      "method": "POST",
+      "description": "FREE basic phone validation and normalization. E.164 formatting, line type detection, country code detection. Essential for NOC agents validating phone numbers in call detail records.",
+      "price": "$0.00",
+      "tags": ["telecom", "phone", "validation", "free"],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "raw_string": {"type": "string", "description": "Raw phone string input"},
+          "region": {"type": "string", "description": "ISO country prefix hint"}
+        },
+        "required": ["raw_string"]
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "valid": {"type": "boolean"},
+          "e164": {"type": "string"},
+          "line_type_hint": {"type": "string"}
+        }
+      }
+    },
+    {
+      "path": "/api/v1/tools/sip-decode",
+      "method": "POST",
+      "description": "Parse SIP protocol messages into structured JSON for telecom automation. Extract headers, methods, URIs, SDP content, and body. Essential for NOC agents analyzing SIP traces, VoIP monitoring systems, and telecom automation. Use when agents encounter SIP messages in telecom logs, call detail records, or network monitoring data.",
+      "price": "$0.01",
+      "tags": ["sip", "telecom", "parser"],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "rawSipMessage": {"type": "string", "description": "Raw SIP header string content"}
+        },
+        "required": ["rawSipMessage"]
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "status": {"type": "string"},
+          "data": {
+            "type": "object",
+            "properties": {
+              "method": {"type": "string"},
+              "headers": {"type": "object"}
+            }
+          }
+        }
+      }
+    },
+    {
+      "path": "/api/v1/tools/call-diagnose",
+      "method": "POST",
+      "description": "Analyze SIP traces to diagnose VoIP call failures with telecom domain expertise. Identifies SIP error patterns, provides root cause hypotheses, and suggests specific telecom troubleshooting steps. Essential for NOC automation agents, telecom technical support, and VoIP monitoring. Use when agents need to analyze call failures, troubleshoot SIP issues, or provide telecom technical support.",
+      "price": "$0.02",
+      "tags": ["forensics", "voip", "debug", "premium"],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "sipTrace": {"type": "string", "description": "Sequential SIP trace lines tied to a singular Call-ID"}
+        },
+        "required": ["sipTrace"]
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "status": {"type": "string"},
+          "data": {
+            "type": "object",
+            "properties": {
+              "hypotheses": {"type": "array", "items": {"type": "string"}},
+              "remediation": {"type": "string"}
+            }
+          }
+        }
+      }
+    },
+    {
+      "path": "/api/v1/tools/phone-info",
+      "method": "POST",
+      "description": "Get comprehensive phone number information including carrier detection, line type analysis, and regional data. Provides carrier type (mobile, landline, toll-free), confidence levels, and possible regions. Use when agents need detailed phone intelligence for fraud detection, routing optimization, or contact database enrichment.",
+      "price": "$0.005",
+      "tags": ["telecom", "phone", "carrier", "intelligence"],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "phone_number": {"type": "string", "description": "Phone number to analyze - any format accepted"},
+          "region": {"type": "string", "description": "ISO country code hint for improved accuracy (e.g., 'US', 'GB', 'DE')"}
+        },
+        "required": ["phone_number"]
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "status": {"type": "string"},
+          "phone_analysis": {
+            "type": "object",
+            "properties": {
+              "e164": {"type": "string", "description": "E.164 formatted number"},
+              "line_type": {"type": "string", "description": "Line type: 'MOBILE', 'FIXED_LINE', 'TOLL_FREE', 'PREMIUM_RATE'"},
+              "carrier": {
+                "type": "object",
+                "properties": {
+                  "name": {"type": "string", "description": "Carrier name or type"},
+                  "type": {"type": "string", "description": "Carrier type: 'mobile', 'wireline', 'toll_free', 'international'"},
+                  "confidence": {"type": "string", "description": "Detection confidence: 'high', 'medium', 'low'"}
+                }
+              },
+              "possible_regions": {
+                "type": "array",
+                "items": {"type": "string"},
+                "description": "Possible countries/regions for this number"
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "tags": ["telecom", "sip", "voip", "noc", "telecom-automation", "sip-protocol", "voip-monitoring", "call-diagnostics"],
+  "categories": ["telecom-automation", "noc-operations", "voip-monitoring", "sip-protocol"],
+  "pricing_tier": {
+    "free": ["phone-normalize"],  # Basic validation free like Twilio
+    "advanced": ["sip-decode", "phone-info"],  # $0.005-$0.01 tier
+    "premium": ["call-diagnose"]  # $0.02+ tier for specialized expertise
+  },
+  "freeTier": {
+    "enabled": false,  # No daily limit - phone-normalize is completely free
+    "description": "phone-normalize is completely free (no payment required). Advanced tools require micropayments: sip-decode ($0.01), phone-info ($0.005), call-diagnose ($0.02)."
+  },
+  "agentIntegration": {
+    "targetAgents": ["NOC automation agents", "VoIP monitoring agents", "Telecom technical support agents", "Network operations agents", "Call center automation agents"],
+    "telecomPlatforms": ["FreeSWITCH", "Asterisk", "Kamailio", "OpenSIPS", "Cisco CallManager", "Avaya", "Genesys"],
+    "monitoringSystems": ["Nagios", "Zabbix", "Prometheus", "Grafana", "Elastic Stack", "Splunk"],
+    "retryPolicy": {
+      "paymentFailure": "retry_with_backoff",
+      "maxRetries": 3,
+      "backoffSeconds": [1, 5, 15]
+    },
+    "errorHandling": {
+      "402_payment_required": "log_and_retry_with_alternative",
+      "422_validation_error": "clean_sip_data_and_retry",
+      "500_server_error": "retry_with_exponential_backoff"
+    },
+    "telecomUseCases": [
+      "NOC automation for SIP trace analysis and call failure troubleshooting",
+      "VoIP monitoring with automated SIP message parsing and alerting",
+      "Telecom technical support with SIP protocol expertise and diagnostics",
+      "Call center automation with phone validation and carrier detection",
+      "Network operations automation with telecom protocol analysis",
+      "Incident response automation for VoIP service outages"
+    ]
+  }
+}

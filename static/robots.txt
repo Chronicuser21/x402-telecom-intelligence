@@ -1,0 +1,18 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://asahi-1.tail779e35.ts.net/sitemap.xml
+
+# Crawl-delay for polite crawling
+Crawl-delay: 1
+Allow: /.well-known/x402
+Allow: /.well-known/x402.json
+Allow: /x402.json
+Allow: /api/v1/tools/list-products
+Allow: /api/v1/tools/health
+Allow: /openapi.json
+Disallow: /data/
+
+# x402 discovery
+Sitemap: https://asahi-1.tail779e35.ts.net/x402.json

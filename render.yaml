@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: x402-telecom-intelligence
+    runtime: python
+    plan: free
+    buildCommand: "pip install uv && uv sync"
+    startCommand: "uv run uvicorn src.main:app --host 0.0.0.0 --port $PORT"
+    envVars:
+      - key: PORT
+        value: 8000
+      - key: PYTHON_VERSION
+        value: "3.13"
+      - key: PAY_TO_ADDRESS
+        value: "0xD333941784201caC6C3c082D9BEef22EFefe4750"
+      - key: NETWORK
+        value: "eip155:8453"
+      - key: SERVICE_URL
+        value: "https://x402-telecom-intelligence.onrender.com"

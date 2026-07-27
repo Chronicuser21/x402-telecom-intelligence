@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+pydantic
+phonenumbers
+phonenumberslite
+x402
+requests
+httpx
