@@ -20,9 +20,17 @@ This project implements a **production-ready telecom intelligence API** with ult
    - **Start Command**: `uv run uvicorn src.main:app --host 0.0.0.0 --port $PORT`
    - **Environment Variables**:
      - `PORT`: 8000
-     - `PAY_TO_ADDRESS`: Your payment address
+     - `CDP_API_KEY`: Coinbase CDP API key for payment processing
+     - `CDP_API_SECRET`: Coinbase CDP API secret for payment processing
+     - `PAY_TO_ADDRESS`: 0xD333941784201caC6C3c082D9BEef22EFefe4750
      - `NETWORK`: eip155:8453
      - `SERVICE_URL`: Your Render service URL
+
+### Getting CDP API Keys
+1. Go to https://portal.cdp.coinbase.com/settings/api-keys
+2. Create new API keys for x402 services
+3. Add the keys to your Render environment variables
+4. Ensure your payTo wallet has ETH for gas fees on Base Mainnet
 
 5. Deploy and your service will be available at `https://your-service-name.onrender.com`
 
