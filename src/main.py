@@ -84,7 +84,7 @@ class DemoBypassMiddleware(BaseHTTPMiddleware):
         if is_demo:
             path = request.url.path
             # Demo bypass for paid tools (phone-normalize is free so doesn't need bypass)
-            if path in ("/api/v1/tools/sip-decode", "/api/v1/tools/call-diagnose", "/api/v1/tools/phone-info"):
+            if path in ("/api/v1/tools/sip-decode", "/api/v1/tools/call-diagnose", "/api/v1/tools/phone-info", "/api/v1/tools/fraud-detection", "/api/v1/tools/billing-intelligence"):
                 import json
                 from fastapi.responses import JSONResponse
 
@@ -105,6 +105,16 @@ class DemoBypassMiddleware(BaseHTTPMiddleware):
                     from src.routes.telecom import phone_info, PhoneInfoRequest
                     req_obj = PhoneInfoRequest(**payload)
                     res_data = await phone_info(req_obj)
+                    response = JSONResponse(content=res_data)
+                elif path == "/api/v1/tools/fraud-detection":
+                    from src.routes.telecom import fraud_detection, FraudDetectionRequest
+                    req_obj = FraudDetectionRequest(**payload)
+                    res_data = await fraud_detection(req_obj)
+                    response = JSONResponse(content=res_data)
+                elif path == "/api/v1/tools/billing-intelligence":
+                    from src.routes.telecom import billing_intelligence, BillingIntelligenceRequest
+                    req_obj = BillingIntelligenceRequest(**payload)
+                    res_data = await billing_intelligence(req_obj)
                     response = JSONResponse(content=res_data)
 
                 if is_demo:
@@ -197,6 +207,68 @@ routes_config: dict[str, RouteConfig] = {
                         "e164": "+14155552671",
                         "line_type": "MOBILE",
                         "carrier": {"name": "Mobile Carrier (US/CA)", "type": "mobile"}
+                    }
+                }
+            )
+        )
+    ),
+
+    "POST /api/v1/tools/fraud-detection": RouteConfig(
+        accepts=_pay("$0.03"),  # Premium Plus - advanced fraud analysis
+        resource=f"{SERVICE_URL}/api/v1/tools/fraud-detection",
+        description="Advanced fraud detection for call patterns. Detect suspicious call patterns, spikes, misroutes, and anomalies. Essential for NOC agents preventing toll fraud and revenue sharing abuse.",
+        mime_type="application/json",
+        service_name="Telecom SIP Intelligence",
+        tags=["telecom", "fraud", "security", "premium-plus"],
+        extensions=declare_discovery_extension(
+            input={"call_patterns": [{"status": "success", "destination": "+1234567890"}]},
+            input_schema={
+                "properties": {
+                    "call_patterns": {"type": "array", "items": {"type": "object"}, "description": "List of call records for fraud analysis"},
+                    "analysis_window": {"type": "string", "description": "Time window for analysis (default: 1h)"},
+                    "threshold_config": {"type": "object", "description": "Custom fraud detection thresholds"}
+                },
+                "required": ["call_patterns"],
+            },
+            body_type="json",
+            output=OutputConfig(
+                example={
+                    "status": "success",
+                    "fraud_analysis": {
+                        "risk_level": "low",
+                        "risk_score": 0,
+                        "indicators": []
+                    }
+                }
+            )
+        )
+    ),
+
+    "POST /api/v1/tools/billing-intelligence": RouteConfig(
+        accepts=_pay("$0.02"),  # Premium - cost analysis
+        resource=f"{SERVICE_URL}/api/v1/tools/billing-intelligence",
+        description="Billing intelligence and cost impact analysis. Summarize call outcomes, failed attempts, and cost impacting issues. Essential for NOC agents optimizing telecom costs and identifying revenue loss.",
+        mime_type="application/json",
+        service_name="Telecom SIP Intelligence",
+        tags=["telecom", "billing", "cost-analysis", "premium"],
+        extensions=declare_discovery_extension(
+            input={"call_records": [{"status": "success", "cost": 0.05}]},
+            input_schema={
+                "properties": {
+                    "call_records": {"type": "array", "items": {"type": "object"}, "description": "Call records with duration, status, and cost"},
+                    "analysis_period": {"type": "string", "description": "Analysis period: daily, weekly, monthly (default: daily)"},
+                    "cost_threshold": {"type": "number", "description": "Cost alert threshold for budget monitoring"}
+                },
+                "required": ["call_records"],
+            },
+            body_type="json",
+            output=OutputConfig(
+                example={
+                    "status": "success",
+                    "billing_analysis": {
+                        "total_cost": 100.50,
+                        "success_rate": "95.5%",
+                        "cost_issues": []
                     }
                 }
             )

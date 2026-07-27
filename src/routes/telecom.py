@@ -533,6 +533,54 @@ async def list_products():
                 "required": ["phone_number"],
             },
         },
+        {
+            "name": "fraud-detection",
+            "method": "POST",
+            "price_usdc": 0.03,  # Premium - advanced fraud analysis
+            "description": "Advanced fraud detection for call patterns. Detect suspicious call patterns, spikes, misroutes, and anomalies. Essential for NOC agents preventing toll fraud and revenue sharing abuse.",
+            "input_schema": {
+                "properties": {
+                    "call_patterns": {
+                        "type": "array",
+                        "items": {"type": "object"},
+                        "description": "List of call records for fraud analysis"
+                    },
+                    "analysis_window": {
+                        "type": "string",
+                        "description": "Time window for analysis (default: 1h)"
+                    },
+                    "threshold_config": {
+                        "type": "object",
+                        "description": "Custom fraud detection thresholds"
+                    }
+                },
+                "required": ["call_patterns"],
+            },
+        },
+        {
+            "name": "billing-intelligence",
+            "method": "POST",
+            "price_usdc": 0.02,  # Premium - cost analysis
+            "description": "Billing intelligence and cost impact analysis. Summarize call outcomes, failed attempts, and cost impacting issues. Essential for NOC agents optimizing telecom costs and identifying revenue loss.",
+            "input_schema": {
+                "properties": {
+                    "call_records": {
+                        "type": "array",
+                        "items": {"type": "object"},
+                        "description": "Call records with duration, status, and cost"
+                    },
+                    "analysis_period": {
+                        "type": "string",
+                        "description": "Analysis period: daily, weekly, monthly (default: daily)"
+                    },
+                    "cost_threshold": {
+                        "type": "number",
+                        "description": "Cost alert threshold for budget monitoring"
+                    }
+                },
+                "required": ["call_records"],
+            },
+        },
     ]
     return {
         "status": "success",
@@ -540,7 +588,8 @@ async def list_products():
         "pricing_tier": {
             "free": ["phone-normalize"],  # Basic validation free like Twilio
             "advanced": ["sip-decode", "phone-info"],  # $0.005-$0.01 tier
-            "premium": ["call-diagnose"]  # $0.02+ tier for specialized expertise
+            "premium": ["call-diagnose", "billing-intelligence"],  # $0.02 tier for specialized expertise
+            "premium_plus": ["fraud-detection"]  # $0.03 tier for advanced fraud analysis
         }
     }
 
@@ -1006,10 +1055,420 @@ async def sip_decode(payload: SipDecodeRequest):
                                   "server_error" if 500 <= status_code < 600 else \
                                   "global_failure" if 600 <= status_code < 700 else "unknown"
 
+    # Add SDP analysis if body contains SDP content
+    if body and "application/sdp" in str(body).lower():
+        sdp_analysis = analyze_sdp_content(body)
+        result["sdp_analysis"] = sdp_analysis
+
     return {
         "status": "success",
         "data": result,
     }
+
+
+def analyze_sdp_content(sdp_body: str) -> dict:
+    """Analyze SDP content for media negotiation issues and configuration problems."""
+    if not sdp_body:
+        return {"error": "No SDP content provided"}
+    
+    lines = sdp_body.splitlines()
+    analysis = {
+        "valid": True,
+        "issues": [],
+        "warnings": [],
+        "media_streams": [],
+        "codecs": [],
+        "connection_info": None,
+        "session_info": {}
+    }
+    
+    # Parse SDP fields
+    for line in lines:
+        line = line.strip()
+        if line.startswith("v="):
+            analysis["session_info"]["version"] = line[2:]
+        elif line.startswith("o="):
+            analysis["session_info"]["origin"] = line[2:]
+        elif line.startswith("s="):
+            analysis["session_info"]["session_name"] = line[2:]
+        elif line.startswith("c="):
+            analysis["connection_info"] = line[2:]
+        elif line.startswith("m="):
+            media_info = line[2:].split()
+            if len(media_info) >= 3:
+                media_type = media_info[0]
+                port = media_info[1]
+                transport = media_info[2]
+                codecs = media_info[3:] if len(media_info) > 3 else []
+                
+                media_stream = {
+                    "type": media_type,
+                    "port": port,
+                    "transport": transport,
+                    "codecs": codecs
+                }
+                analysis["media_streams"].append(media_stream)
+                analysis["codecs"].extend(codecs)
+    
+    # Check for common SDP issues
+    if not analysis["connection_info"]:
+        analysis["issues"].append("Missing connection information (c= line)")
+        analysis["valid"] = False
+    
+    if not analysis["media_streams"]:
+        analysis["issues"].append("No media streams defined (m= lines)")
+        analysis["valid"] = False
+    
+    # Check for common codec issues
+    common_codecs = ["0", "8", "9", "18", "101"]  # PCMU, PCMA, G722, G729, telephone-event
+    found_codecs = analysis["codecs"]
+    
+    if not any(codec in common_codecs for codec in found_codecs):
+        analysis["warnings"].append("No common codecs found - may cause codec incompatibility")
+    
+    # Check for RTP/AVP transport issues
+    for stream in analysis["media_streams"]:
+        if stream["transport"] != "RTP/AVP":
+            analysis["warnings"].append(f"Non-standard transport: {stream['transport']} for {stream['type']}")
+        
+        if stream["port"] == "0":
+            analysis["issues"].append(f"Media stream {stream['type']} has port 0 - media disabled")
+    
+    # Check for IPv6 compatibility
+    if analysis["connection_info"] and "IP6" in analysis["connection_info"]:
+        analysis["warnings"].append("IPv6 connection detected - verify IPv6 support")
+    
+    return analysis
+
+
+# ── Fraud Detection Tool ─────────────────────────────────────────────────────
+
+class FraudDetectionRequest(BaseModel):
+    call_patterns: list[dict]  # List of call records for analysis
+    analysis_window: str = "1h"  # Time window for analysis
+    threshold_config: Optional[dict] = None  # Custom thresholds
+
+@router.post("/fraud-detection")
+async def fraud_detection(payload: FraudDetectionRequest):
+    """Detect suspicious call patterns, spikes, misroutes, and anomalies."""
+    if not payload.call_patterns:
+        raise HTTPException(status_code=422, detail="No call patterns provided for analysis")
+    
+    analysis = analyze_call_patterns_for_fraud(
+        payload.call_patterns,
+        payload.analysis_window,
+        payload.threshold_config
+    )
+    
+    return {
+        "status": "success",
+        "fraud_analysis": analysis
+    }
+
+
+def analyze_call_patterns_for_fraud(call_patterns: list, window: str, thresholds: Optional[dict]) -> dict:
+    """Analyze call patterns for fraud indicators and anomalies."""
+    if not call_patterns:
+        return {"error": "No call patterns to analyze"}
+    
+    # Set default thresholds
+    default_thresholds = {
+        "call_rate_spike": 3.0,  # 3x normal rate
+        "failed_call_rate": 0.3,  # 30% failure rate
+        "international_ratio": 0.8,  # 80% international
+        "short_duration": 5,  # 5 seconds
+        "premium_rate_ratio": 0.2,  # 20% premium rate
+        "destination_concentration": 0.5  # 50% to single destination
+    }
+    
+    if thresholds:
+        default_thresholds.update(thresholds)
+    
+    analysis = {
+        "total_calls": len(call_patterns),
+        "risk_score": 0,
+        "risk_level": "low",
+        "indicators": [],
+        "patterns": {},
+        "recommendations": []
+    }
+    
+    # Extract call metrics
+    successful_calls = 0
+    failed_calls = 0
+    international_calls = 0
+    premium_rate_calls = 0
+    short_calls = 0
+    destinations = {}
+    caller_ids = {}
+    call_durations = []
+    
+    for call in call_patterns:
+        status = call.get("status", "unknown")
+        destination = call.get("destination", "unknown")
+        caller_id = call.get("caller_id", "unknown")
+        duration = call.get("duration", 0)
+        is_international = call.get("international", False)
+        is_premium = call.get("premium_rate", False)
+        
+        if status == "success":
+            successful_calls += 1
+        else:
+            failed_calls += 1
+        
+        if is_international:
+            international_calls += 1
+        
+        if is_premium:
+            premium_rate_calls += 1
+        
+        if duration < default_thresholds["short_duration"]:
+            short_calls += 1
+        
+        destinations[destination] = destinations.get(destination, 0) + 1
+        caller_ids[caller_id] = caller_ids.get(caller_id, 0) + 1
+        call_durations.append(duration)
+    
+    # Calculate patterns
+    total_calls = len(call_patterns)
+    success_rate = successful_calls / total_calls if total_calls > 0 else 0
+    failure_rate = failed_calls / total_calls if total_calls > 0 else 0
+    international_ratio = international_calls / total_calls if total_calls > 0 else 0
+    premium_ratio = premium_rate_calls / total_calls if total_calls > 0 else 0
+    short_call_ratio = short_calls / total_calls if total_calls > 0 else 0
+    
+    analysis["patterns"] = {
+        "success_rate": f"{success_rate:.2%}",
+        "failure_rate": f"{failure_rate:.2%}",
+        "international_ratio": f"{international_ratio:.2%}",
+        "premium_rate_ratio": f"{premium_ratio:.2%}",
+        "short_call_ratio": f"{short_call_ratio:.2%}",
+        "unique_destinations": len(destinations),
+        "unique_callers": len(caller_ids),
+        "avg_duration": sum(call_durations) / len(call_durations) if call_durations else 0
+    }
+    
+    # Check for fraud indicators
+    risk_score = 0
+    
+    # High failure rate
+    if failure_rate > default_thresholds["failed_call_rate"]:
+        risk_score += 25
+        analysis["indicators"].append({
+            "type": "high_failure_rate",
+            "severity": "high",
+            "description": f"Failure rate {failure_rate:.2%} exceeds threshold {default_thresholds['failed_call_rate']:.2%}",
+            "impact": "Potential equipment abuse or fraud attempt"
+        })
+    
+    # High international ratio
+    if international_ratio > default_thresholds["international_ratio"]:
+        risk_score += 20
+        analysis["indicators"].append({
+            "type": "high_international_ratio",
+            "severity": "medium",
+            "description": f"International ratio {international_ratio:.2%} exceeds threshold {default_thresholds['international_ratio']:.2%}",
+            "impact": "Potential toll fraud or international revenue sharing abuse"
+        })
+    
+    # High premium rate calls
+    if premium_ratio > default_thresholds["premium_rate_ratio"]:
+        risk_score += 30
+        analysis["indicators"].append({
+            "type": "high_premium_rate_calls",
+            "severity": "high",
+            "description": f"Premium rate ratio {premium_ratio:.2%} exceeds threshold {default_thresholds['premium_rate_ratio']:.2%}",
+            "impact": "Potential revenue sharing fraud or premium rate abuse"
+        })
+    
+    # High short call ratio
+    if short_call_ratio > 0.5:
+        risk_score += 15
+        analysis["indicators"].append({
+            "type": "high_short_call_ratio",
+            "severity": "medium",
+            "description": f"Short call ratio {short_call_ratio:.2%} indicates potential testing or abuse",
+            "impact": "Could indicate fraud testing or automated dialing"
+        })
+    
+    # Destination concentration
+    if destinations:
+        max_dest_ratio = max(destinations.values()) / total_calls
+        if max_dest_ratio > default_thresholds["destination_concentration"]:
+            risk_score += 10
+            top_destination = max(destinations, key=destinations.get)
+            analysis["indicators"].append({
+                "type": "destination_concentration",
+                "severity": "low",
+                "description": f"{max_dest_ratio:.2%} of calls to single destination: {top_destination}",
+                "impact": "Potential single-destination fraud or revenue sharing abuse"
+            })
+    
+    # Caller concentration
+    if caller_ids:
+        max_caller_ratio = max(caller_ids.values()) / total_calls
+        if max_caller_ratio > 0.8:
+            risk_score += 20
+            top_caller = max(caller_ids, key=caller_ids.get)
+            analysis["indicators"].append({
+                "type": "caller_concentration",
+                "severity": "high",
+                "description": f"{max_caller_ratio:.2%} of calls from single caller: {top_caller}",
+                "impact": "Potential account compromise or abuse from single source"
+            })
+    
+    # Determine risk level
+    analysis["risk_score"] = risk_score
+    if risk_score >= 70:
+        analysis["risk_level"] = "critical"
+        analysis["recommendations"].append("Immediate investigation required - potential fraud detected")
+        analysis["recommendations"].append("Consider blocking suspicious callers/destinations")
+    elif risk_score >= 40:
+        analysis["risk_level"] = "high"
+        analysis["recommendations"].append("Investigation recommended - multiple fraud indicators detected")
+        analysis["recommendations"].append("Monitor closely and consider rate limiting")
+    elif risk_score >= 20:
+        analysis["risk_level"] = "medium"
+        analysis["recommendations"].append("Continue monitoring - some suspicious patterns detected")
+        analysis["recommendations"].append("Consider additional logging and analysis")
+    else:
+        analysis["risk_level"] = "low"
+        analysis["recommendations"].append("Normal call patterns - continue routine monitoring")
+    
+    return analysis
+
+
+# ── Billing Intelligence Tool ───────────────────────────────────────────────────
+
+class BillingIntelligenceRequest(BaseModel):
+    call_records: list[dict]  # Call records with duration, status, cost
+    analysis_period: str = "daily"  # daily, weekly, monthly
+    cost_threshold: Optional[float] = None  # Cost alert threshold
+
+@router.post("/billing-intelligence")
+async def billing_intelligence(payload: BillingIntelligenceRequest):
+    """Summarize call outcomes, failed attempts, and cost impacting issues."""
+    if not payload.call_records:
+        raise HTTPException(status_code=422, detail="No call records provided for analysis")
+    
+    analysis = analyze_billing_impact(
+        payload.call_records,
+        payload.analysis_period,
+        payload.cost_threshold
+    )
+    
+    return {
+        "status": "success",
+        "billing_analysis": analysis
+    }
+
+
+def analyze_billing_impact(call_records: list, period: str, cost_threshold: Optional[float]) -> dict:
+    """Analyze call records for billing impact and cost optimization opportunities."""
+    if not call_records:
+        return {"error": "No call records to analyze"}
+    
+    analysis = {
+        "period": period,
+        "total_calls": len(call_records),
+        "total_cost": 0,
+        "successful_calls": 0,
+        "failed_calls": 0,
+        "cost_by_status": {},
+        "cost_by_destination": {},
+        "cost_by_caller": {},
+        "failed_call_cost": 0,
+        "cost_issues": [],
+        "optimization_opportunities": []
+    }
+    
+    for record in call_records:
+        status = record.get("status", "unknown")
+        cost = record.get("cost", 0)
+        destination = record.get("destination", "unknown")
+        caller = record.get("caller_id", "unknown")
+        duration = record.get("duration", 0)
+        
+        analysis["total_cost"] += cost
+        
+        if status == "success":
+            analysis["successful_calls"] += 1
+        else:
+            analysis["failed_calls"] += 1
+            analysis["failed_call_cost"] += cost
+        
+        # Cost by status
+        analysis["cost_by_status"][status] = analysis["cost_by_status"].get(status, 0) + cost
+        
+        # Cost by destination
+        analysis["cost_by_destination"][destination] = analysis["cost_by_destination"].get(destination, 0) + cost
+        
+        # Cost by caller
+        analysis["cost_by_caller"][caller] = analysis["cost_by_caller"].get(caller, 0) + cost
+    
+    # Calculate percentages
+    total_calls = len(call_records)
+    analysis["success_rate"] = f"{(analysis['successful_calls'] / total_calls * 100):.2f}%" if total_calls > 0 else "0%"
+    analysis["failure_rate"] = f"{(analysis['failed_calls'] / total_calls * 100):.2f}%" if total_calls > 0 else "0%"
+    analysis["failed_cost_ratio"] = f"{(analysis['failed_call_cost'] / analysis['total_cost'] * 100):.2f}%" if analysis['total_cost'] > 0 else "0%"
+    
+    # Identify cost issues
+    if analysis["failed_call_cost"] > analysis["total_cost"] * 0.1:  # More than 10% wasted on failed calls
+        analysis["cost_issues"].append({
+            "type": "high_failed_call_cost",
+            "severity": "high",
+            "description": f"${analysis['failed_call_cost']:.2f} ({analysis['failed_cost_ratio']}) wasted on failed calls",
+            "impact": "Significant revenue loss from failed call attempts",
+            "recommendation": "Investigate call failure causes and improve routing"
+        })
+    
+    # Check for expensive destinations
+    if analysis["cost_by_destination"]:
+        max_dest_cost = max(analysis["cost_by_destination"].values())
+        if max_dest_cost > analysis["total_cost"] * 0.3:  # Single destination > 30% of costs
+            expensive_dest = max(analysis["cost_by_destination"], key=analysis["cost_by_destination"].get)
+            analysis["cost_issues"].append({
+                "type": "expensive_destination",
+                "severity": "medium",
+                "description": f"Destination {expensive_dest} accounts for ${max_dest_cost:.2f} of total costs",
+                "impact": "High cost concentration may indicate routing inefficiency",
+                "recommendation": "Consider alternative routing or rate negotiation"
+            })
+    
+    # Check cost threshold
+    if cost_threshold and analysis["total_cost"] > cost_threshold:
+        analysis["cost_issues"].append({
+            "type": "cost_threshold_exceeded",
+            "severity": "high",
+            "description": f"Total cost ${analysis['total_cost']:.2f} exceeds threshold ${cost_threshold:.2f}",
+            "impact": "Budget overrun detected",
+            "recommendation": "Implement call throttling or cost controls"
+        })
+    
+    # Optimization opportunities
+    if analysis["failed_calls"] > 0:
+        analysis["optimization_opportunities"].append({
+            "type": "reduce_failed_calls",
+            "potential_savings": f"${analysis['failed_call_cost']:.2f}",
+            "description": "Improve call success rate to reduce wasted costs"
+        })
+    
+    # Identify top cost contributors
+    if analysis["cost_by_destination"]:
+        sorted_dests = sorted(analysis["cost_by_destination"].items(), key=lambda x: x[1], reverse=True)
+        analysis["top_destinations"] = [
+            {"destination": dest, "cost": cost, "percentage": f"{cost/analysis['total_cost']*100:.1f}%"}
+            for dest, cost in sorted_dests[:5]
+        ]
+    
+    if analysis["cost_by_caller"]:
+        sorted_callers = sorted(analysis["cost_by_caller"].items(), key=lambda x: x[1], reverse=True)
+        analysis["top_callers"] = [
+            {"caller": caller, "cost": cost, "percentage": f"{cost/analysis['total_cost']*100:.1f}%"}
+            for caller, cost in sorted_callers[:5]
+        ]
+    
+    return analysis
 
 
 # ── Call Diagnose ($0.05) ────────────────────────────────────────────────────

@@ -149,18 +149,91 @@
           }
         }
       }
+    },
+    {
+      "path": "/api/v1/tools/fraud-detection",
+      "method": "POST",
+      "description": "Advanced fraud detection for call patterns. Detect suspicious call patterns, spikes, misroutes, and anomalies. Essential for NOC agents preventing toll fraud and revenue sharing abuse.",
+      "price": "$0.03",
+      "tags": ["telecom", "fraud", "security", "premium-plus"],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "call_patterns": {
+            "type": "array",
+            "items": {"type": "object"},
+            "description": "List of call records for fraud analysis"
+          },
+          "analysis_window": {"type": "string", "description": "Time window for analysis (default: 1h)"},
+          "threshold_config": {"type": "object", "description": "Custom fraud detection thresholds"}
+        },
+        "required": ["call_patterns"]
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "status": {"type": "string"},
+          "fraud_analysis": {
+            "type": "object",
+            "properties": {
+              "risk_level": {"type": "string"},
+              "risk_score": {"type": "number"},
+              "indicators": {"type": "array", "items": {"type": "object"}},
+              "patterns": {"type": "object"},
+              "recommendations": {"type": "array", "items": {"type": "string"}}
+            }
+          }
+        }
+      }
+    },
+    {
+      "path": "/api/v1/tools/billing-intelligence",
+      "method": "POST",
+      "description": "Billing intelligence and cost impact analysis. Summarize call outcomes, failed attempts, and cost impacting issues. Essential for NOC agents optimizing telecom costs and identifying revenue loss.",
+      "price": "$0.02",
+      "tags": ["telecom", "billing", "cost-analysis", "premium"],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "call_records": {
+            "type": "array",
+            "items": {"type": "object"},
+            "description": "Call records with duration, status, cost"
+          },
+          "analysis_period": {"type": "string", "description": "Analysis period: daily, weekly, monthly (default: daily)"},
+          "cost_threshold": {"type": "number", "description": "Cost alert threshold for budget monitoring"}
+        },
+        "required": ["call_records"]
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "status": {"type": "string"},
+          "billing_analysis": {
+            "type": "object",
+            "properties": {
+              "total_cost": {"type": "number"},
+              "success_rate": {"type": "string"},
+              "failure_rate": {"type": "string"},
+              "cost_issues": {"type": "array", "items": {"type": "object"}},
+              "optimization_opportunities": {"type": "array", "items": {"type": "object"}}
+            }
+          }
+        }
+      }
     }
   ],
-  "tags": ["telecom", "sip", "voip", "noc", "telecom-automation", "sip-protocol", "voip-monitoring", "call-diagnostics"],
-  "categories": ["telecom-automation", "noc-operations", "voip-monitoring", "sip-protocol"],
+  "tags": ["telecom", "sip", "voip", "noc", "telecom-automation", "sip-protocol", "voip-monitoring", "call-diagnostics", "fraud-detection", "billing-intelligence"],
+  "categories": ["telecom-automation", "noc-operations", "voip-monitoring", "sip-protocol", "fraud-prevention", "cost-optimization"],
   "pricing_tier": {
     "free": ["phone-normalize"],  # Basic validation free like Twilio
     "advanced": ["sip-decode", "phone-info"],  # $0.005-$0.01 tier
-    "premium": ["call-diagnose"]  # $0.02+ tier for specialized expertise
+    "premium": ["call-diagnose", "billing-intelligence"],  # $0.02 tier for specialized expertise
+    "premium_plus": ["fraud-detection"]  # $0.03 tier for advanced fraud analysis
   },
   "freeTier": {
     "enabled": false,  # No daily limit - phone-normalize is completely free
-    "description": "phone-normalize is completely free (no payment required). Advanced tools require micropayments: sip-decode ($0.01), phone-info ($0.005), call-diagnose ($0.02)."
+    "description": "phone-normalize is completely free (no payment required). Advanced tools require micropayments: sip-decode ($0.01), phone-info ($0.005), call-diagnose ($0.02), billing-intelligence ($0.02), fraud-detection ($0.03)."
   },
   "agentIntegration": {
     "targetAgents": ["NOC automation agents", "VoIP monitoring agents", "Telecom technical support agents", "Network operations agents", "Call center automation agents"],
@@ -182,7 +255,9 @@
       "Telecom technical support with SIP protocol expertise and diagnostics",
       "Call center automation with phone validation and carrier detection",
       "Network operations automation with telecom protocol analysis",
-      "Incident response automation for VoIP service outages"
+      "Incident response automation for VoIP service outages",
+      "Fraud detection and prevention for toll fraud and revenue sharing abuse",
+      "Billing intelligence and cost optimization for telecom operations"
     ]
   }
 }

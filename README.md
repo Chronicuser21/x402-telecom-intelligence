@@ -82,9 +82,11 @@ curl -X POST http://localhost:8001/api/v1/tools/phone-normalize \
 | Method | Path | Price (USDC) | Use Case |
 |--------|------|--------------|----------|
 | `POST` | `/api/v1/tools/phone-normalize` | FREE | Phone validation, format normalization, line type detection |
-| `POST` | `/api/v1/tools/sip-decode` | $0.01 | SIP protocol parsing, header normalization, debugging |
+| `POST` | `/api/v1/tools/sip-decode` | $0.01 | SIP protocol parsing, header normalization, debugging, SDP analysis |
 | `POST` | `/api/v1/tools/call-diagnose` | $0.02 | VoIP failure analysis, call diagnostics, troubleshooting |
 | `POST` | `/api/v1/tools/phone-info` | $0.005 | Carrier detection, regional analysis, fraud prevention |
+| `POST` | `/api/v1/tools/billing-intelligence` | $0.02 | Cost impact analysis, revenue loss identification, optimization |
+| `POST` | `/api/v1/tools/fraud-detection` | $0.03 | Fraud detection, anomaly detection, toll fraud prevention |
 
 ## Use Cases
 
@@ -111,6 +113,20 @@ curl -X POST http://localhost:8001/api/v1/tools/phone-normalize \
 - Enable team collaboration apps
 - Support enterprise telephony solutions
 - Provide telecom intelligence to AI agents
+
+### 📞 Fraud Detection & Prevention
+- Detect suspicious call patterns and anomalies
+- Identify toll fraud and revenue sharing abuse
+- Monitor call spikes and misroutes
+- Analyze caller/destination concentration patterns
+- Prevent premium rate abuse and international fraud
+
+### 💰 Billing Intelligence & Cost Optimization
+- Analyze call outcomes and failed attempts
+- Identify revenue loss from failed calls
+- Optimize telecom costs and routing
+- Monitor budget thresholds and cost alerts
+- Generate cost impact summaries
 
 ## API Examples
 
@@ -151,22 +167,27 @@ curl -X POST http://localhost:8001/api/v1/tools/call-diagnose \
 ## Pricing
 
 ### Free Tier
-- **25 calls per day** completely free
-- No credit card required
+- **phone-normalize**: Completely free (no payment required)
+- No daily limits or restrictions
 - Perfect for development and testing
 
 ### Pay-Per-Call Pricing
-- **Phone Normalize**: $0.001 per call
-- **SIP Decode**: $0.005 per call  
-- **Call Diagnose**: $0.01 per call
+- **Phone Normalize**: FREE
+- **SIP Decode**: $0.01 per call  
+- **Call Diagnose**: $0.02 per call
+- **Phone Info**: $0.005 per call
+- **Billing Intelligence**: $0.02 per call
+- **Fraud Detection**: $0.03 per call
 
 ### Comparison with Alternatives
 | Feature | Traditional APIs | Our API |
 |---------|----------------|---------|
-| Phone Normalize | $0.01 - $0.05 | **$0.001** |
-| SIP Parsing | $0.02 - $0.10 | **$0.005** |
-| Call Diagnostics | $0.05 - $0.20 | **$0.01** |
-| Free Tier | ❌ None | **✅ 25/day** |
+| Phone Normalize | $0.01 - $0.05 | **FREE** |
+| SIP Parsing | $0.02 - $0.10 | **$0.01** |
+| Call Diagnostics | $0.05 - $0.20 | **$0.02** |
+| Fraud Detection | $0.10 - $0.50 | **$0.03** |
+| Billing Intelligence | Not available | **$0.02** |
+| Free Tier | ❌ None | **✅ Unlimited** |
 | Monthly Minimums | Often required | **❌ None** |
 
 ## Technical Specifications
