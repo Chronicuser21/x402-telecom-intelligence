@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Telecom SIP Intelligence for AI Agents - NOC Operations & VoIP Monitoring</title>
+<meta name="description" content="Specialized telecom/SIP intelligence tools for AI agents in NOC operations, VoIP monitoring, and telecom automation. Free phone normalization, fraud detection, billing intelligence.">
+<meta name="keywords" content="telecom AI agents, NOC automation, VoIP monitoring, SIP parsing, fraud detection, billing intelligence, phone validation, call diagnostics">
+<style>
+  :root {
+    --bg: #0a0e17;
+    --card: #111827;
+    --border: #1e293b;
+    --accent: #3b82f6;
+    --accent2: #10b981;
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+  }
+  .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+  .hero {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: linear-gradient(135deg, rgba(59,130,246,0.1) 0%, rgba(16,185,129,0.1) 100%);
+    border-radius: 16px;
+    margin-bottom: 2rem;
+  }
+  .hero h1 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .hero p {
+    font-size: 1.2rem;
+    color: var(--muted);
+    margin-bottom: 2rem;
+  }
+  .cta-button {
+    background: var(--accent);
+    color: white;
+    padding: 1rem 2rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    margin: 0.5rem;
+  }
+  .cta-button:hover { background: #2563eb; }
+  .cta-button.secondary {
+    background: transparent;
+    border: 2px solid var(--accent);
+  }
+  .features {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin: 2rem 0;
+  }
+  .feature-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+  }
+  .feature-card h3 {
+    color: var(--accent);
+    margin-bottom: 0.5rem;
+  }
+  .pricing {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin: 2rem 0;
+  }
+  .pricing-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+  }
+  .pricing-card.featured {
+    border-color: var(--accent2);
+    box-shadow: 0 0 20px rgba(16,185,129,0.2);
+  }
+  .price {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--accent2);
+    margin: 1rem 0;
+  }
+  .demo-section {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 2rem;
+    margin: 2rem 0;
+  }
+  .demo-input {
+    width: 100%;
+    padding: 0.75rem;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-family: inherit;
+    margin: 0.5rem 0;
+  }
+  .demo-button {
+    background: var(--accent);
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    margin: 0.5rem 0;
+  }
+  .demo-result {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 1rem;
+    margin-top: 1rem;
+    font-family: 'SF Mono', monospace;
+    font-size: 0.9rem;
+    white-space: pre-wrap;
+  }
+  .use-cases {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 2rem;
+    margin: 2rem 0;
+  }
+  .use-case-item {
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .use-case-item:last-child { border-bottom: none; }
+  .use-case-item h4 {
+    color: var(--accent);
+    margin-bottom: 0.5rem;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="hero">
+    <h1>🚀 Telecom SIP Intelligence for AI Agents</h1>
+    <p>Specialized telecom/SIP intelligence tools for AI agents in NOC operations, VoIP monitoring, and telecom automation</p>
+    <div>
+      <a href="#demo" class="cta-button">Try Free Demo</a>
+      <a href="/docs" class="cta-button secondary">View Documentation</a>
+    </div>
+    <p style="margin-top: 1rem; font-size: 0.9rem;">✨ phone-normalize completely free • No limits • Ultra-low pricing</p>
+  </div>
+
+  <div class="features">
+    <div class="feature-card">
+      <h3>📱 Phone Validation</h3>
+      <p>FREE phone normalization to E.164 format, line type detection (mobile, landline, toll-free), and country code detection.</p>
+    </div>
+    <div class="feature-card">
+      <h3>📞 SIP Parsing & SDP Analysis</h3>
+      <p>Advanced SIP protocol parsing with SDP content analysis, media negotiation detection, and telecom domain expertise.</p>
+    </div>
+    <div class="feature-card">
+      <h3>🔍 Call Diagnostics</h3>
+      <p>Analyze SIP traces to identify call failures, provide root cause hypotheses, and suggest remediation steps.</p>
+    </div>
+    <div class="feature-card">
+      <h3>🎯 Fraud Detection</h3>
+      <p>Detect suspicious call patterns, spikes, misroutes, and anomalies. Prevent toll fraud and revenue sharing abuse.</p>
+    </div>
+    <div class="feature-card">
+      <h3>💰 Billing Intelligence</h3>
+      <p>Cost impact analysis, revenue loss identification, and optimization opportunities for telecom operations.</p>
+    </div>
+    <div class="feature-card">
+      <h3>🤖 AI Agent Optimized</h3>
+      <p>Designed for NOC automation agents, VoIP monitoring systems, and telecom technical support agents.</p>
+    </div>
+  </div>
+
+  <div class="pricing">
+    <div class="pricing-card featured">
+      <h3>🎁 Free Tier</h3>
+      <div class="price">$0</div>
+      <p>phone-normalize completely free</p>
+      <p>Perfect for development and testing</p>
+      <p>No credit card required</p>
+      <a href="#demo" class="cta-button" style="margin-top: 1rem;">Start Free</a>
+    </div>
+    <div class="pricing-card">
+      <h3>💎 Pay-Per-Call</h3>
+      <div class="price">$0.005+</div>
+      <p>Phone Normalize: FREE</p>
+      <p>SIP Decode: $0.01/call</p>
+      <p>Call Diagnose: $0.02/call</p>
+      <p>Phone Info: $0.005/call</p>
+      <p>Fraud Detection: $0.03/call</p>
+      <p>Billing Intelligence: $0.02/call</p>
+      <p>No monthly minimums</p>
+    </div>
+  </div>
+
+  <div class="demo-section" id="demo">
+    <h2>🧪 Try It Now - Free Demo</h2>
+    <p>Test our API without signup. phone-normalize is completely free - no limits.</p>
+    
+    <div style="margin-top: 1.5rem;">
+      <h3>Phone Number Validation</h3>
+      <input type="text" id="demo-phone" class="demo-input" value="+14155552671" placeholder="Enter phone number">
+      <input type="text" id="demo-region" class="demo-input" value="US" placeholder="Region (US, GB, etc.)" style="width: 100px;">
+      <button class="demo-button" onclick="testPhoneNormalize()">Test Phone Normalize</button>
+      <div id="phone-result" class="demo-result" style="display:none;">Result will appear here...</div>
+    </div>
+
+    <div style="margin-top: 1.5rem;">
+      <h3>SIP Message Parsing</h3>
+      <textarea id="demo-sip" class="demo-input" rows="4" placeholder="Enter SIP message">INVITE sip:bob@biloxi.com SIP/2.0
+Via: SIP/2.0/UDP pc33.atlanta.com
+From: Alice <sip:alice@atlanta.com>
+To: Bob <sip:bob@biloxi.com></textarea>
+      <button class="demo-button" onclick="testSipDecode()">Test SIP Decode</button>
+      <div id="sip-result" class="demo-result" style="display:none;">Result will appear here...</div>
+    </div>
+  </div>
+
+  <div class="use-cases">
+    <h2>🎯 Use Cases</h2>
+    <div class="use-case-item">
+      <h4>🤖 NOC Automation Agents</h4>
+      <p>Automated SIP trace analysis, call failure troubleshooting, and incident response for VoIP service outages.</p>
+    </div>
+    <div class="use-case-item">
+      <h4>📡 VoIP Monitoring Systems</h4>
+      <p>Real-time SIP message parsing, alerting, and monitoring with telecom domain expertise.</p>
+    </div>
+    <div class="use-case-item">
+      <h4>🎯 Fraud Detection & Prevention</h4>
+      <p>Detect toll fraud, revenue sharing abuse, call pattern anomalies, and suspicious routing.</p>
+    </div>
+    <div class="use-case-item">
+      <h4>💰 Cost Optimization</h4>
+      <p>Billing intelligence, cost impact analysis, revenue loss identification, and routing optimization.</p>
+    </div>
+    <div class="use-case-item">
+      <h4>🏢 Telecom Technical Support</h4>
+      <p>SIP protocol expertise, diagnostics, and automated troubleshooting for telecom operations.</p>
+    </div>
+    <div class="use-case-item">
+      <h4>📞 Call Center Automation</h4>
+      <p>Phone validation, carrier detection, line type analysis, and contact database enrichment.</p>
+    </div>
+  </div>
+
+  <div style="text-align: center; margin-top: 2rem; color: var(--muted);">
+    <p>Built for AI agents in telecom • 99.9% uptime • Sub-50ms response times</p>
+    <p>
+      <a href="/docs" style="color: var(--accent);">Documentation</a> • 
+      <a href="/api/v1/tools/list-products" style="color: var(--accent);">Service Catalog</a> • 
+      <a href="/x402.json" style="color: var(--accent);">x402 Manifest</a>
+    </p>
+  </div>
+</div>
+
+<script>
+async function testPhoneNormalize() {
+  const phone = document.getElementById('demo-phone').value;
+  const region = document.getElementById('demo-region').value;
+  const resultDiv = document.getElementById('phone-result');
+  
+  resultDiv.style.display = 'block';
+  resultDiv.textContent = 'Testing...';
+  
+  try {
+    const response = await fetch('/api/v1/tools/phone-normalize', {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'x-payment': 'demo'
+      },
+      body: JSON.stringify({ raw_string: phone, region: region })
+    });
+    const data = await response.json();
+    resultDiv.textContent = JSON.stringify(data, null, 2);
+  } catch (error) {
+    resultDiv.textContent = 'Error: ' + error.message;
+  }
+}
+
+async function testSipDecode() {
+  const sip = document.getElementById('demo-sip').value;
+  const resultDiv = document.getElementById('sip-result');
+  
+  resultDiv.style.display = 'block';
+  resultDiv.textContent = 'Testing...';
+  
+  try {
+    const response = await fetch('/api/v1/tools/sip-decode', {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'x-payment': 'demo'
+      },
+      body: JSON.stringify({ rawSipMessage: sip })
+    });
+    const data = await response.json();
+    resultDiv.textContent = JSON.stringify(data, null, 2);
+  } catch (error) {
+    resultDiv.textContent = 'Error: ' + error.message;
+  }
+}
+</script>
+</body>
+</html>

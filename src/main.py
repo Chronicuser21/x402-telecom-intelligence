@@ -331,9 +331,31 @@ app.add_middleware(DemoBypassMiddleware)
 
 @app.get("/", response_class=FileResponse, tags=["Discovery"])
 async def service_root():
-    """Serve the visual dashboard."""
-    html_path = Path(__file__).parent.parent / "static" / "dashboard.html"
-    return FileResponse(html_path, media_type="text/html")
+    """Serve the main landing page."""
+    landing_path = Path(__file__).parent.parent / "static" / "index.html"
+    if landing_path.exists():
+        return FileResponse(landing_path, media_type="text/html")
+    # Fallback to landing.html if index.html doesn't exist
+    landing_path = Path(__file__).parent.parent / "static" / "landing.html"
+    if landing_path.exists():
+        return FileResponse(landing_path, media_type="text/html")
+    # Fallback to simple info if no HTML files exist
+    return JSONResponse(content={
+        "name": "Telecom SIP Intelligence for AI Agents",
+        "description": "Specialized telecom/SIP intelligence tools for AI agents in NOC operations, VoIP monitoring, and telecom automation.",
+        "endpoints": {
+            "health": "/api/v1/tools/health",
+            "catalog": "/api/v1/tools/list-products",
+            "phone_normalize": "/api/v1/tools/phone-normalize (FREE)",
+            "sip_decode": "/api/v1/tools/sip-decode ($0.01)",
+            "call_diagnose": "/api/v1/tools/call-diagnose ($0.02)",
+            "phone_info": "/api/v1/tools/phone-info ($0.005)",
+            "billing_intelligence": "/api/v1/tools/billing-intelligence ($0.02)",
+            "fraud_detection": "/api/v1/tools/fraud-detection ($0.03)"
+        },
+        "documentation": "/docs",
+        "x402_manifest": "/x402.json"
+    })
 
 
 @app.get("/x402.json", tags=["Discovery"])
