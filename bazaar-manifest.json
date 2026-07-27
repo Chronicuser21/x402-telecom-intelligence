@@ -1,0 +1,391 @@
+{
+  "name": "Telecom SIP Intelligence for AI Agents",
+  "version": "1.0.0",
+  "description": "AI-native telecom intelligence for agents and operators: SIP decoding, SDP analysis, call diagnostics, fraud detection, billing intelligence, and phone enrichment.",
+  "provider": {
+    "name": "x402-telecom-intelligence",
+    "website": "https://x402-telecom-intelligence.onrender.com",
+    "contact": "https://github.com/Chronicuser21/x402-telecom-intelligence"
+  },
+  "network": {
+    "chain": "Base Mainnet",
+    "chainId": "eip155:8453",
+    "currency": "USDC",
+    "paymentModel": "pay_per_call",
+    "payTo": "0xD333941784201caC6C3c082D9BEef22EFefe4750",
+    "facilitator": "https://api.cdp.coinbase.com/platform/v2/x402"
+  },
+  "baseUrl": "https://x402-telecom-intelligence.onrender.com",
+  "discovery": {
+    "type": "x402-bazaar",
+    "discoverableBy": [
+      "ai-agents",
+      "noc-automation",
+      "voip-monitoring",
+      "fraud-prevention",
+      "cost-optimization"
+    ]
+  },
+  "endpoints": [
+    {
+      "name": "phone_normalize",
+      "path": "/api/v1/tools/phone-normalize",
+      "method": "POST",
+      "price": 0.00,
+      "currency": "USDC",
+      "summary": "FREE phone validation and normalization to E.164 format with line type detection.",
+      "best_for": "Phone validation, format normalization, line type detection",
+      "inputSchema": {
+        "type": "object",
+        "required": ["raw_string"],
+        "properties": {
+          "raw_string": {
+            "type": "string",
+            "description": "Raw phone string input"
+          },
+          "target_format": {
+            "type": "string",
+            "description": "Output format: e164, intl, national, rfc3966"
+          },
+          "region": {
+            "type": "string",
+            "description": "ISO country prefix hint (default US)"
+          }
+        }
+      },
+      "outputSchema": {
+        "type": "object",
+        "required": ["status", "phone_analysis"],
+        "properties": {
+          "status": {"type": "string"},
+          "phone_analysis": {
+            "type": "object",
+            "properties": {
+              "e164": {"type": "string"},
+              "line_type": {"type": "string"},
+              "country_code": {"type": "string"},
+              "national_number": {"type": "string"},
+              "is_valid": {"type": "boolean"}
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "sip_decode",
+      "path": "/api/v1/tools/sip-decode",
+      "method": "POST",
+      "price": 0.01,
+      "currency": "USDC",
+      "summary": "Parse SIP text and analyze SDP for codecs, streams, transport, and negotiation issues.",
+      "best_for": "Basic call trace inspection, SIP protocol debugging",
+      "inputSchema": {
+        "type": "object",
+        "required": ["rawSipMessage"],
+        "properties": {
+          "rawSipMessage": {
+            "type": "string",
+            "description": "Raw SIP message text (request-line + headers + optional body)"
+          }
+        }
+      },
+      "outputSchema": {
+        "type": "object",
+        "required": ["status", "data"],
+        "properties": {
+          "status": {"type": "string"},
+          "data": {
+            "type": "object",
+            "properties": {
+              "startLine": {"type": "string"},
+              "sipVersion": {"type": "string"},
+              "type": {"type": "string"},
+              "method": {"type": "string"},
+              "uri": {"type": "string"},
+              "statusCode": {"type": "number"},
+              "reasonPhrase": {"type": "string"},
+              "headers": {"type": "object"},
+              "body": {"type": "string"},
+              "sdp_analysis": {
+                "type": "object",
+                "properties": {
+                  "valid": {"type": "boolean"},
+                  "media_streams": {"type": "array"},
+                  "connection_info": {"type": "string"},
+                  "issues": {"type": "array"},
+                  "warnings": {"type": "array"}
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "call_diagnose",
+      "path": "/api/v1/tools/call-diagnose",
+      "method": "POST",
+      "price": 0.02,
+      "currency": "USDC",
+      "summary": "Analyze SIP traces to infer failure cause and recommend next steps.",
+      "best_for": "NOC troubleshooting and escalations, VoIP failure analysis",
+      "inputSchema": {
+        "type": "object",
+        "required": ["sipTrace"],
+        "properties": {
+          "sipTrace": {
+            "type": "string",
+            "description": "Sequential SIP trace lines tied to a singular Call-ID"
+          }
+        }
+      },
+      "outputSchema": {
+        "type": "object",
+        "required": ["status", "data"],
+        "properties": {
+          "status": {"type": "string"},
+          "data": {
+            "type": "object",
+            "properties": {
+              "assessment": {"type": "string"},
+              "summary": {"type": "string"},
+              "flow_summary": {
+                "type": "object",
+                "properties": {
+                  "methods_detected": {"type": "array"},
+                  "invite_count": {"type": "number"},
+                  "bye_count": {"type": "number"},
+                  "cancel_count": {"type": "number"},
+                  "status_codes": {"type": "object"},
+                  "unique_call_ids": {"type": "array"}
+                }
+              },
+              "hypotheses": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "hypothesis": {"type": "string"},
+                    "severity": {"type": "string"},
+                    "remediation": {"type": "string"}
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "phone_info",
+      "path": "/api/v1/tools/phone-info",
+      "method": "POST",
+      "price": 0.005,
+      "currency": "USDC",
+      "summary": "Return carrier, line type, and regional intelligence for a phone number.",
+      "best_for": "Fast enrichment and routing, carrier detection",
+      "inputSchema": {
+        "type": "object",
+        "required": ["phone_number"],
+        "properties": {
+          "phone_number": {
+            "type": "string",
+            "description": "Phone number to analyze - any format accepted"
+          },
+          "region": {
+            "type": "string",
+            "description": "ISO country code hint (default: US)"
+          }
+        }
+      },
+      "outputSchema": {
+        "type": "object",
+        "required": ["status", "phone_analysis"],
+        "properties": {
+          "status": {"type": "string"},
+          "phone_analysis": {
+            "type": "object",
+            "properties": {
+              "original": {"type": "string"},
+              "e164": {"type": "string"},
+              "country_code": {"type": "string"},
+              "national_number": {"type": "string"},
+              "area_code": {"type": "string"},
+              "subscriber_number": {"type": "string"},
+              "line_type": {"type": "string"},
+              "possible_regions": {"type": "array"},
+              "is_valid": {"type": "boolean"},
+              "carrier": {
+                "type": "object",
+                "properties": {
+                  "name": {"type": "string"},
+                  "type": {"type": "string"},
+                  "confidence": {"type": "string"}
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "fraud_detection",
+      "path": "/api/v1/tools/fraud-detection",
+      "method": "POST",
+      "price": 0.03,
+      "currency": "USDC",
+      "summary": "Score call behavior for fraud risk using pattern and concentration analysis.",
+      "best_for": "Abuse, toll fraud, and anomaly review, fraud prevention",
+      "inputSchema": {
+        "type": "object",
+        "required": ["call_patterns"],
+        "properties": {
+          "call_patterns": {
+            "type": "array",
+            "items": {"type": "object"},
+            "description": "List of call records for fraud analysis"
+          },
+          "analysis_window": {
+            "type": "string",
+            "description": "Time window for analysis (default: 1h)"
+          },
+          "threshold_config": {
+            "type": "object",
+            "description": "Custom fraud detection thresholds"
+          }
+        }
+      },
+      "outputSchema": {
+        "type": "object",
+        "required": ["status", "fraud_analysis"],
+        "properties": {
+          "status": {"type": "string"},
+          "fraud_analysis": {
+            "type": "object",
+            "properties": {
+              "total_calls": {"type": "number"},
+              "risk_score": {"type": "number"},
+              "risk_level": {"type": "string"},
+              "indicators": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "type": {"type": "string"},
+                    "severity": {"type": "string"},
+                    "description": {"type": "string"},
+                    "impact": {"type": "string"}
+                  }
+                }
+              },
+              "patterns": {
+                "type": "object",
+                "properties": {
+                  "success_rate": {"type": "string"},
+                  "failure_rate": {"type": "string"},
+                  "international_ratio": {"type": "string"},
+                  "premium_rate_ratio": {"type": "string"},
+                  "short_call_ratio": {"type": "string"},
+                  "unique_destinations": {"type": "number"},
+                  "unique_callers": {"type": "number"},
+                  "avg_duration": {"type": "number"}
+                }
+              },
+              "recommendations": {
+                "type": "array",
+                "items": {"type": "string"}
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "billing_intelligence",
+      "path": "/api/v1/tools/billing-intelligence",
+      "method": "POST",
+      "price": 0.02,
+      "currency": "USDC",
+      "summary": "Summarize failed-call cost impact and optimization opportunities.",
+      "best_for": "Finance and ops cost control, cost optimization",
+      "inputSchema": {
+        "type": "object",
+        "required": ["call_records"],
+        "properties": {
+          "call_records": {
+            "type": "array",
+            "items": {"type": "object"},
+            "description": "Call records with duration, status, and cost"
+          },
+          "analysis_period": {
+            "type": "string",
+            "description": "Analysis period: daily, weekly, monthly (default: daily)"
+          },
+          "cost_threshold": {
+            "type": "number",
+            "description": "Cost alert threshold for budget monitoring"
+          }
+        }
+      },
+      "outputSchema": {
+        "type": "object",
+        "required": ["status", "billing_analysis"],
+        "properties": {
+          "status": {"type": "string"},
+          "billing_analysis": {
+            "type": "object",
+            "properties": {
+              "period": {"type": "string"},
+              "total_calls": {"type": "number"},
+              "total_cost": {"type": "number"},
+              "successful_calls": {"type": "number"},
+              "failed_calls": {"type": "number"},
+              "cost_by_status": {"type": "object"},
+              "cost_by_destination": {"type": "object"},
+              "cost_by_caller": {"type": "object"},
+              "failed_call_cost": {"type": "number"},
+              "cost_issues": {
+                "type": "array",
+                "items": {"type": "object"}
+              },
+              "optimization_opportunities": {
+                "type": "array",
+                "items": {"type": "object"}
+              },
+              "success_rate": {"type": "string"},
+              "failure_rate": {"type": "string"},
+              "failed_cost_ratio": {"type": "string"},
+              "top_destinations": {
+                "type": "array",
+                "items": {"type": "object"}
+              },
+              "top_callers": {
+                "type": "array",
+                "items": {"type": "object"}
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "metadata": {
+    "bestFor": [
+      "NOC operations",
+      "VoIP monitoring",
+      "fraud prevention",
+      "cost optimization",
+      "AI agent workflows",
+      "telecom technical support"
+    ],
+    "tags": [
+      "telecom",
+      "sip",
+      "voip",
+      "fraud",
+      "billing",
+      "agentic",
+      "noc-automation"
+    ]
+  }
+}
