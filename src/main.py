@@ -37,27 +37,33 @@ NETWORK = os.getenv("NETWORK", "eip155:8453")  # Base Mainnet
 SERVICE_URL = os.getenv("SERVICE_URL", "https://x402-telecom-intelligence.onrender.com")
 
 
-# ── Build real x402 resource server with CDP auth ──────────
-from src.cdp_facilitator import CDPFacilitatorClient
+# ── Build real x402 resource server with CDP facilitator ──────────
+from x402.http import HTTPFacilitatorClient, FacilitatorConfig
 
 def build_server() -> x402ResourceServer:
-    cdp_key = os.getenv("CDP_API_KEY", "")
-    cdp_secret = os.getenv("CDP_API_SECRET", "")
-    if cdp_key and cdp_secret:
-        try:
-            facilitator = CDPFacilitatorClient(
-                api_key=cdp_key,
-                api_secret_b64=cdp_secret,
+    # Use CDP facilitator for production (recommended by Coinbase)
+    # Requires CDP_API_KEY_ID and CDP_API_KEY_SECRET environment variables
+    cdp_key_id = os.getenv("CDP_API_KEY_ID", "")
+    cdp_key_secret = os.getenv("CDP_API_KEY_SECRET", "")
+    
+    if cdp_key_id and cdp_key_secret:
+        facilitator = HTTPFacilitatorClient(
+            FacilitatorConfig(
+                url="https://api.cdp.coinbase.com/platform/v2/x402",
+                api_key_id=cdp_key_id,
+                api_key_secret=cdp_key_secret
             )
-            print(f"CDP Facilitator initialized successfully")
-        except Exception as e:
-            print(f"CDP Facilitator failed: {e}")
-            from src.mock_facilitator import MockFacilitatorClient
-            facilitator = MockFacilitatorClient()
+        )
+        print(f"CDP Facilitator initialized successfully with API keys")
     else:
-        print("No CDP keys found, using mock facilitator")
-        from src.mock_facilitator import MockFacilitatorClient
-        facilitator = MockFacilitatorClient()
+        # Fallback to testnet facilitator for development
+        facilitator = HTTPFacilitatorClient(
+            FacilitatorConfig(
+                url="https://x402.org/facilitator"
+            )
+        )
+        print(f"Using testnet facilitator (no CDP API keys provided)")
+    
     server = x402ResourceServer(facilitator_clients=[facilitator])
     from x402.mechanisms.evm.exact import register_exact_evm_server
     register_exact_evm_server(server, networks=[NETWORK])

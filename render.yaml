@@ -14,7 +14,7 @@ services:
         value: "eip155:8453"
       - key: SERVICE_URL
         value: "https://x402-telecom-intelligence.onrender.com"
-      - key: CDP_API_KEY
+      - key: CDP_API_KEY_ID
         value: "29de2b4d-3e88-4268-9614-f842b43aa0cf"
-      - key: CDP_API_SECRET
+      - key: CDP_API_KEY_SECRET
         value: "kyh9XHwHTjO98flQeJU4UAHjK+sCBhluawIPThtwQl2Efkm2HeqvdqHi9QFwuKJxcThZsDTwA7/aAutTVSTUfQ=="

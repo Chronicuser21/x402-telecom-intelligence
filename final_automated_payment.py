@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""Final automated x402 payment using x402 httpx client with CDP facilitator"""
+"""Final automated x402 payment using vanilla x402 Python SDK"""
 import asyncio
 import json
 from eth_account import Account
 from x402 import x402Client
 from x402.http import HTTPFacilitatorClient, FacilitatorConfig
 from x402.mechanisms.evm import EthAccountSigner
-from x402.mechanisms.evm.exact.register import register_exact_evm_client
+from x402.mechanisms.evm.exact import ExactEvmScheme
 from x402.http.clients import x402HttpxClient
 
 # Private key
@@ -16,26 +16,19 @@ SERVICE_URL = "https://x402-telecom-intelligence.onrender.com/api/v1/tools/phone
 PAY_TO_ADDRESS = "0xCd1219753686FD4f0f2DBEa80896ba2716138F95"
 
 async def make_final_payment():
-    """Make final automated x402 payment"""
+    """Make final automated x402 payment using vanilla x402 SDK"""
     
-    # Setup x402 client with CDP facilitator
+    # Setup x402 client with proper scheme
     client = x402Client()
-    
-    # Setup CDP facilitator
-    from src.cdp_facilitator import CDPFacilitatorClient
-    facilitator = CDPFacilitatorClient(
-        api_key="29de2b4d-3e88-4268-9614-f842b43aa0cf",
-        api_secret_b64="kyh9XHwHTjO98flQeJU4UAHjK+sCBhluawIPThtwQl2Efkm2HeqvdqHi9QFwuKJxcThZsDTwA7/aAutTVSTUfQ=="
-    )
     
     # Register EVM payments with private key signer
     account = Account.from_key(PRIVATE_KEY)
-    register_exact_evm_client(client, EthAccountSigner(account))
+    client.register("eip155:8453", ExactEvmScheme(signer=EthAccountSigner(account)))
     
     print(f"Using account: {account.address}")
     print(f"Service URL: {SERVICE_URL}")
     print(f"Payment to: {PAY_TO_ADDRESS}")
-    print("CDP facilitator initialized")
+    print("x402 client initialized with ExactEvmScheme")
     
     # Test data
     payload = {
