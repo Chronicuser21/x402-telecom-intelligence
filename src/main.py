@@ -143,7 +143,7 @@ routes_config: dict[str, RouteConfig] = {
                     "method": {"type": "string", "enum": ["POST"]},
                     "rawSipMessage": {"type": "string", "description": "Raw SIP header string content"}
                 },
-                "required": ["rawSipMessage"],
+                "required": ["type", "method", "rawSipMessage"],
             },
             body_type="json",
             output=OutputConfig(
@@ -174,7 +174,7 @@ routes_config: dict[str, RouteConfig] = {
                     "method": {"type": "string", "enum": ["POST"]},
                     "sipTrace": {"type": "string", "description": "Sequential SIP trace lines tied to a singular Call-ID"}
                 },
-                "required": ["sipTrace"],
+                "required": ["type", "method", "sipTrace"],
             },
             body_type="json",
             output=OutputConfig(
@@ -206,7 +206,7 @@ routes_config: dict[str, RouteConfig] = {
                     "phone_number": {"type": "string", "description": "Raw phone number string"},
                     "region": {"type": "string", "description": "ISO country code hint (default: US)"}
                 },
-                "required": ["phone_number"],
+                "required": ["type", "method", "phone_number"],
             },
             body_type="json",
             output=OutputConfig(
@@ -240,7 +240,7 @@ routes_config: dict[str, RouteConfig] = {
                     "analysis_window": {"type": "string", "description": "Time window for analysis (default: 1h)"},
                     "threshold_config": {"type": "object", "description": "Custom fraud detection thresholds"}
                 },
-                "required": ["call_patterns"],
+                "required": ["type", "method", "call_patterns"],
             },
             body_type="json",
             output=OutputConfig(
@@ -274,7 +274,7 @@ routes_config: dict[str, RouteConfig] = {
                     "analysis_period": {"type": "string", "description": "Analysis period: daily, weekly, monthly (default: daily)"},
                     "cost_threshold": {"type": "number", "description": "Cost alert threshold for budget monitoring"}
                 },
-                "required": ["call_records"],
+                "required": ["type", "method", "call_records"],
             },
             body_type="json",
             output=OutputConfig(
