@@ -48,10 +48,13 @@ def build_server() -> x402ResourceServer:
                 api_key=cdp_key,
                 api_secret_b64=cdp_secret,
             )
-        except Exception:
+            print(f"CDP Facilitator initialized successfully")
+        except Exception as e:
+            print(f"CDP Facilitator failed: {e}")
             from src.mock_facilitator import MockFacilitatorClient
             facilitator = MockFacilitatorClient()
     else:
+        print("No CDP keys found, using mock facilitator")
         from src.mock_facilitator import MockFacilitatorClient
         facilitator = MockFacilitatorClient()
     server = x402ResourceServer(facilitator_clients=[facilitator])
