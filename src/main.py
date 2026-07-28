@@ -134,27 +134,26 @@ routes_config: dict[str, RouteConfig] = {
         mime_type="application/json",
         service_name="Telecom SIP Intelligence",
         tags=["sip", "telecom", "parser", "advanced"],
-        # Temporarily disabled Bazaar extension to fix payment middleware
-        # extensions=declare_discovery_extension(
-        #     input={"rawSipMessage": "INVITE sip:bob@biloxi.com SIP/2.0..."},
-        #     input_schema={
-        #         "type": "object",
-        #         "properties": {
-        #             "rawSipMessage": {"type": "string", "description": "Raw SIP header string content"}
-        #         },
-        #         "required": ["rawSipMessage"],
-        #     },
-        #     body_type="json",
-        #     output=OutputConfig(
-        #         example={
-        #             "status": "success",
-        #             "data": {
-        #                 "method": "INVITE",
-        #                 "headers": {"From": "Alice", "To": "Bob"}
-        #             }
-        #         }
-        #     )
-        # )
+        extensions=declare_discovery_extension(
+            input={"type": "http", "rawSipMessage": "INVITE sip:bob@biloxi.com SIP/2.0..."},
+            input_schema={
+                "type": "object",
+                "properties": {
+                    "rawSipMessage": {"type": "string", "description": "Raw SIP header string content"}
+                },
+                "required": ["rawSipMessage"],
+            },
+            body_type="json",
+            output=OutputConfig(
+                example={
+                    "status": "success",
+                    "data": {
+                        "method": "INVITE",
+                        "headers": {"From": "Alice", "To": "Bob"}
+                    }
+                }
+            )
+        )
     ),
 
     "POST /api/v1/tools/call-diagnose": RouteConfig(
@@ -164,27 +163,26 @@ routes_config: dict[str, RouteConfig] = {
         mime_type="application/json",
         service_name="Telecom SIP Intelligence",
         tags=["forensics", "voip", "debug", "premium"],
-        # Temporarily disabled Bazaar extension to fix payment middleware
-        # extensions=declare_discovery_extension(
-        #     input={"sipTrace": "INVITE ... \nSIP/2.0 487 Request Terminated"},
-        #     input_schema={
-        #         "type": "object",
-        #         "properties": {
-        #             "sipTrace": {"type": "string", "description": "Sequential SIP trace lines tied to a singular Call-ID"}
-        #         },
-        #         "required": ["sipTrace"],
-        #     },
-        #     body_type="json",
-        #     output=OutputConfig(
-        #         example={
-        #             "status": "success",
-        #             "data": {
-        #                 "hypotheses": ["Normal user hangup sequence encountered"],
-        #                 "remediation": "No infrastructure fix required"
-        #             }
-        #         }
-        #     )
-        # )
+        extensions=declare_discovery_extension(
+            input={"type": "http", "sipTrace": "INVITE ... \nSIP/2.0 487 Request Terminated"},
+            input_schema={
+                "type": "object",
+                "properties": {
+                    "sipTrace": {"type": "string", "description": "Sequential SIP trace lines tied to a singular Call-ID"}
+                },
+                "required": ["sipTrace"],
+            },
+            body_type="json",
+            output=OutputConfig(
+                example={
+                    "status": "success",
+                    "data": {
+                        "hypotheses": ["Normal user hangup sequence encountered"],
+                        "remediation": "No infrastructure fix required"
+                    }
+                }
+            )
+        )
     ),
 
     "POST /api/v1/tools/phone-info": RouteConfig(
@@ -194,29 +192,28 @@ routes_config: dict[str, RouteConfig] = {
         mime_type="application/json",
         service_name="Telecom SIP Intelligence",
         tags=["telecom", "phone", "carrier", "intelligence"],
-        # Temporarily disabled Bazaar extension to fix payment middleware
-        # extensions=declare_discovery_extension(
-        #     input={"phone_number": "+14155552671", "region": "US"},
-        #     input_schema={
-        #         "type": "object",
-        #         "properties": {
-        #             "phone_number": {"type": "string", "description": "Raw phone number string"},
-        #             "region": {"type": "string", "description": "ISO country code hint (default: US)"}
-        #         },
-        #         "required": ["phone_number"],
-        #     },
-        #     body_type="json",
-        #     output=OutputConfig(
-        #         example={
-        #             "status": "success",
-        #             "phone_analysis": {
-        #                 "e164": "+14155552671",
-        #                 "line_type": "MOBILE",
-        #                 "carrier": {"name": "Mobile Carrier (US/CA)", "type": "mobile"}
-        #             }
-        #         }
-        #     )
-        # )
+        extensions=declare_discovery_extension(
+            input={"type": "http", "phone_number": "+14155552671", "region": "US"},
+            input_schema={
+                "type": "object",
+                "properties": {
+                    "phone_number": {"type": "string", "description": "Raw phone number string"},
+                    "region": {"type": "string", "description": "ISO country code hint (default: US)"}
+                },
+                "required": ["phone_number"],
+            },
+            body_type="json",
+            output=OutputConfig(
+                example={
+                    "status": "success",
+                    "phone_analysis": {
+                        "e164": "+14155552671",
+                        "line_type": "MOBILE",
+                        "carrier": {"name": "Mobile Carrier (US/CA)", "type": "mobile"}
+                    }
+                }
+            )
+        )
     ),
 
     "POST /api/v1/tools/fraud-detection": RouteConfig(
@@ -226,30 +223,29 @@ routes_config: dict[str, RouteConfig] = {
         mime_type="application/json",
         service_name="Telecom SIP Intelligence",
         tags=["telecom", "fraud", "security", "premium-plus"],
-        # Temporarily disabled Bazaar extension to fix payment middleware
-        # extensions=declare_discovery_extension(
-        #     input={"call_patterns": [{"status": "success", "destination": "+1234567890"}]},
-        #     input_schema={
-        #         "type": "object",
-        #         "properties": {
-        #             "call_patterns": {"type": "array", "items": {"type": "object"}, "description": "List of call records for fraud analysis"},
-        #             "analysis_window": {"type": "string", "description": "Time window for analysis (default: 1h)"},
-        #             "threshold_config": {"type": "object", "description": "Custom fraud detection thresholds"}
-        #         },
-        #         "required": ["call_patterns"],
-        #     },
-        #     body_type="json",
-        #     output=OutputConfig(
-        #         example={
-        #             "status": "success",
-        #             "fraud_analysis": {
-        #                 "risk_level": "low",
-        #                 "risk_score": 0,
-        #                 "indicators": []
-        #             }
-        #         }
-        #     )
-        # )
+        extensions=declare_discovery_extension(
+            input={"type": "http", "call_patterns": [{"status": "success", "destination": "+1234567890"}]},
+            input_schema={
+                "type": "object",
+                "properties": {
+                    "call_patterns": {"type": "array", "items": {"type": "object"}, "description": "List of call records for fraud analysis"},
+                    "analysis_window": {"type": "string", "description": "Time window for analysis (default: 1h)"},
+                    "threshold_config": {"type": "object", "description": "Custom fraud detection thresholds"}
+                },
+                "required": ["call_patterns"],
+            },
+            body_type="json",
+            output=OutputConfig(
+                example={
+                    "status": "success",
+                    "fraud_analysis": {
+                        "risk_level": "low",
+                        "risk_score": 0,
+                        "indicators": []
+                    }
+                }
+            )
+        )
     ),
 
     "POST /api/v1/tools/billing-intelligence": RouteConfig(
@@ -259,30 +255,29 @@ routes_config: dict[str, RouteConfig] = {
         mime_type="application/json",
         service_name="Telecom SIP Intelligence",
         tags=["telecom", "billing", "cost-analysis", "premium"],
-        # Temporarily disabled Bazaar extension to fix payment middleware
-        # extensions=declare_discovery_extension(
-        #     input={"call_records": [{"status": "success", "cost": 0.05}]},
-        #     input_schema={
-        #         "type": "object",
-        #         "properties": {
-        #             "call_records": {"type": "array", "items": {"type": "object"}, "description": "Call records with duration, status, and cost"},
-        #             "analysis_period": {"type": "string", "description": "Analysis period: daily, weekly, monthly (default: daily)"},
-        #             "cost_threshold": {"type": "number", "description": "Cost alert threshold for budget monitoring"}
-        #         },
-        #         "required": ["call_records"],
-        #     },
-        #     body_type="json",
-        #     output=OutputConfig(
-        #         example={
-        #             "status": "success",
-        #             "billing_analysis": {
-        #                 "total_cost": 100.50,
-        #                 "success_rate": "95.5%",
-        #                 "cost_issues": []
-        #             }
-        #         }
-        #     )
-        # )
+        extensions=declare_discovery_extension(
+            input={"type": "http", "call_records": [{"status": "success", "cost": 0.05}]},
+            input_schema={
+                "type": "object",
+                "properties": {
+                    "call_records": {"type": "array", "items": {"type": "object"}, "description": "Call records with duration, status, and cost"},
+                    "analysis_period": {"type": "string", "description": "Analysis period: daily, weekly, monthly (default: daily)"},
+                    "cost_threshold": {"type": "number", "description": "Cost alert threshold for budget monitoring"}
+                },
+                "required": ["call_records"],
+            },
+            body_type="json",
+            output=OutputConfig(
+                example={
+                    "status": "success",
+                    "billing_analysis": {
+                        "total_cost": 100.50,
+                        "success_rate": "95.5%",
+                        "cost_issues": []
+                    }
+                }
+            )
+        )
     ),
 }
 
