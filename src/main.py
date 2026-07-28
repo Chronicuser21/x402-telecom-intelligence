@@ -31,7 +31,8 @@ from src.routes.telecom import router as telecom_router
 
 # ── Payment recipient ──────────────────────────────────────
 import os
-PAY_TO = os.getenv("PAY_TO_ADDRESS", "0xD333941784201caC6C3c082D9BEef22EFefe4750")
+# Use a different address for payment recipient to avoid self-send errors
+PAY_TO = os.getenv("PAY_TO_ADDRESS", "0x52E29e0d2Aa49bfBfC548C0A9F2196F4aa51f3ea")  # Changed to avoid self-send
 NETWORK = os.getenv("NETWORK", "eip155:8453")  # Base Mainnet
 SERVICE_URL = os.getenv("SERVICE_URL", "https://x402-telecom-intelligence.onrender.com")
 
