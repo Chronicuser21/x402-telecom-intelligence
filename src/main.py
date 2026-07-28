@@ -133,7 +133,7 @@ routes_config: dict[str, RouteConfig] = {
     # phone-normalize is completely free - not included in payment middleware
     "POST /api/v1/tools/sip-decode": RouteConfig(
         accepts=_pay("$0.01"),  # Increased - SIP parsing is advanced telecom intelligence
-        resource=f"{SERVICE_URL}/api/v1/tools/sip-decode",
+        resource="https://x402-telecom-intelligence.onrender.com/api/v1/tools/sip-decode",
         description="Advanced SIP protocol parsing with telecom domain expertise. Extract headers, methods, URIs, SDP content, and response code classification. Essential for NOC agents analyzing SIP traces and VoIP monitoring systems.",
         mime_type="application/json",
         service_name="Telecom SIP Intelligence",
@@ -164,7 +164,7 @@ routes_config: dict[str, RouteConfig] = {
 
     "POST /api/v1/tools/call-diagnose": RouteConfig(
         accepts=_pay("$0.02"),  # Premium - VoIP diagnostics is specialized telecom expertise
-        resource=f"{SERVICE_URL}/api/v1/tools/call-diagnose",
+        resource="https://x402-telecom-intelligence.onrender.com/api/v1/tools/call-diagnose",
         description="Premium VoIP call diagnostics with telecom domain expertise. Analyzes SIP traces, identifies failure patterns, provides root cause hypotheses and specific troubleshooting steps. Essential for NOC automation agents and incident response systems.",
         mime_type="application/json",
         service_name="Telecom SIP Intelligence",
@@ -195,7 +195,7 @@ routes_config: dict[str, RouteConfig] = {
 
     "POST /api/v1/tools/phone-info": RouteConfig(
         accepts=_pay("$0.005"),  # Mid-tier - carrier detection is valuable but not premium
-        resource=f"{SERVICE_URL}/api/v1/tools/phone-info",
+        resource="https://x402-telecom-intelligence.onrender.com/api/v1/tools/phone-info",
         description="Phone intelligence with carrier detection and line type analysis. Provides carrier type, confidence levels, and regional data. Essential for NOC agents doing call routing analysis and fraud detection.",
         mime_type="application/json",
         service_name="Telecom SIP Intelligence",
@@ -228,7 +228,7 @@ routes_config: dict[str, RouteConfig] = {
 
     "POST /api/v1/tools/fraud-detection": RouteConfig(
         accepts=_pay("$0.03"),  # Premium Plus - advanced fraud analysis
-        resource=f"{SERVICE_URL}/api/v1/tools/fraud-detection",
+        resource="https://x402-telecom-intelligence.onrender.com/api/v1/tools/fraud-detection",
         description="Advanced fraud detection for call patterns. Detect suspicious call patterns, spikes, misroutes, and anomalies. Essential for NOC agents preventing toll fraud and revenue sharing abuse.",
         mime_type="application/json",
         service_name="Telecom SIP Intelligence",
@@ -262,7 +262,7 @@ routes_config: dict[str, RouteConfig] = {
 
     "POST /api/v1/tools/billing-intelligence": RouteConfig(
         accepts=_pay("$0.02"),  # Premium - cost analysis
-        resource=f"{SERVICE_URL}/api/v1/tools/billing-intelligence",
+        resource="https://x402-telecom-intelligence.onrender.com/api/v1/tools/billing-intelligence",
         description="Billing intelligence and cost impact analysis. Summarize call outcomes, failed attempts, and cost impacting issues. Essential for NOC agents optimizing telecom costs and identifying revenue loss.",
         mime_type="application/json",
         service_name="Telecom SIP Intelligence",
