@@ -10,8 +10,6 @@ services:
         value: 8000
       - key: PYTHON_VERSION
         value: "3.13"
-      - key: PAY_TO_ADDRESS
-        value: "0xCd1219753686FD4f0f2DBEa80896ba2716138F95"
       - key: NETWORK
         value: "eip155:8453"
       - key: SERVICE_URL
