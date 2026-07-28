@@ -11,8 +11,12 @@ services:
       - key: PYTHON_VERSION
         value: "3.13"
       - key: PAY_TO_ADDRESS
-        value: "0xD333941784201caC6C3c082D9BEef22EFefe4750"
+        value: "0xCd1219753686FD4f0f2DBEa80896ba2716138F95"
       - key: NETWORK
         value: "eip155:8453"
       - key: SERVICE_URL
         value: "https://x402-telecom-intelligence.onrender.com"
+      - key: CDP_API_KEY
+        value: "29de2b4d-3e88-4268-9614-f842b43aa0cf"
+      - key: CDP_API_SECRET
+        value: "kyh9XHwHTjO98flQeJU4UAHjK+sCBhluawIPThtwQl2Efkm2HeqvdqHi9QFwuKJxcThZsDTwA7/aAutTVSTUfQ=="
