@@ -135,7 +135,7 @@ routes_config: dict[str, RouteConfig] = {
         service_name="Telecom SIP Intelligence",
         tags=["sip", "telecom", "parser", "advanced"],
         extensions=declare_discovery_extension(
-            input={"rawSipMessage": "INVITE sip:bob@biloxi.com SIP/2.0..."},
+            input={"type": "http", "method": "POST", "rawSipMessage": "INVITE sip:bob@biloxi.com SIP/2.0..."},
             input_schema={
                 "type": "object",
                 "properties": {
@@ -164,7 +164,7 @@ routes_config: dict[str, RouteConfig] = {
         service_name="Telecom SIP Intelligence",
         tags=["forensics", "voip", "debug", "premium"],
         extensions=declare_discovery_extension(
-            input={"sipTrace": "INVITE ... \nSIP/2.0 487 Request Terminated"},
+            input={"type": "http", "method": "POST", "sipTrace": "INVITE ... \nSIP/2.0 487 Request Terminated"},
             input_schema={
                 "type": "object",
                 "properties": {
@@ -193,7 +193,7 @@ routes_config: dict[str, RouteConfig] = {
         service_name="Telecom SIP Intelligence",
         tags=["telecom", "phone", "carrier", "intelligence"],
         extensions=declare_discovery_extension(
-            input={"phone_number": "+14155552671", "region": "US"},
+            input={"type": "http", "method": "POST", "phone_number": "+14155552671", "region": "US"},
             input_schema={
                 "type": "object",
                 "properties": {
@@ -224,7 +224,7 @@ routes_config: dict[str, RouteConfig] = {
         service_name="Telecom SIP Intelligence",
         tags=["telecom", "fraud", "security", "premium-plus"],
         extensions=declare_discovery_extension(
-            input={"call_patterns": [{"status": "success", "destination": "+1234567890"}]},
+            input={"type": "http", "method": "POST", "call_patterns": [{"status": "success", "destination": "+1234567890"}]},
             input_schema={
                 "type": "object",
                 "properties": {
@@ -256,7 +256,7 @@ routes_config: dict[str, RouteConfig] = {
         service_name="Telecom SIP Intelligence",
         tags=["telecom", "billing", "cost-analysis", "premium"],
         extensions=declare_discovery_extension(
-            input={"call_records": [{"status": "success", "cost": 0.05}]},
+            input={"type": "http", "method": "POST", "call_records": [{"status": "success", "cost": 0.05}]},
             input_schema={
                 "type": "object",
                 "properties": {
