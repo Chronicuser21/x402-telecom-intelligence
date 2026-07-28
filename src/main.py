@@ -135,10 +135,12 @@ routes_config: dict[str, RouteConfig] = {
         service_name="Telecom SIP Intelligence",
         tags=["sip", "telecom", "parser", "advanced"],
         extensions=declare_discovery_extension(
-            input={"type": "http", "rawSipMessage": "INVITE sip:bob@biloxi.com SIP/2.0..."},
+            input={"type": "http", "method": "POST", "rawSipMessage": "INVITE sip:bob@biloxi.com SIP/2.0..."},
             input_schema={
                 "type": "object",
                 "properties": {
+                    "type": {"type": "string", "const": "http"},
+                    "method": {"type": "string", "enum": ["POST"]},
                     "rawSipMessage": {"type": "string", "description": "Raw SIP header string content"}
                 },
                 "required": ["rawSipMessage"],
@@ -164,10 +166,12 @@ routes_config: dict[str, RouteConfig] = {
         service_name="Telecom SIP Intelligence",
         tags=["forensics", "voip", "debug", "premium"],
         extensions=declare_discovery_extension(
-            input={"type": "http", "sipTrace": "INVITE ... \nSIP/2.0 487 Request Terminated"},
+            input={"type": "http", "method": "POST", "sipTrace": "INVITE ... \nSIP/2.0 487 Request Terminated"},
             input_schema={
                 "type": "object",
                 "properties": {
+                    "type": {"type": "string", "const": "http"},
+                    "method": {"type": "string", "enum": ["POST"]},
                     "sipTrace": {"type": "string", "description": "Sequential SIP trace lines tied to a singular Call-ID"}
                 },
                 "required": ["sipTrace"],
@@ -193,10 +197,12 @@ routes_config: dict[str, RouteConfig] = {
         service_name="Telecom SIP Intelligence",
         tags=["telecom", "phone", "carrier", "intelligence"],
         extensions=declare_discovery_extension(
-            input={"type": "http", "phone_number": "+14155552671", "region": "US"},
+            input={"type": "http", "method": "POST", "phone_number": "+14155552671", "region": "US"},
             input_schema={
                 "type": "object",
                 "properties": {
+                    "type": {"type": "string", "const": "http"},
+                    "method": {"type": "string", "enum": ["POST"]},
                     "phone_number": {"type": "string", "description": "Raw phone number string"},
                     "region": {"type": "string", "description": "ISO country code hint (default: US)"}
                 },
@@ -224,10 +230,12 @@ routes_config: dict[str, RouteConfig] = {
         service_name="Telecom SIP Intelligence",
         tags=["telecom", "fraud", "security", "premium-plus"],
         extensions=declare_discovery_extension(
-            input={"type": "http", "call_patterns": [{"status": "success", "destination": "+1234567890"}]},
+            input={"type": "http", "method": "POST", "call_patterns": [{"status": "success", "destination": "+1234567890"}]},
             input_schema={
                 "type": "object",
                 "properties": {
+                    "type": {"type": "string", "const": "http"},
+                    "method": {"type": "string", "enum": ["POST"]},
                     "call_patterns": {"type": "array", "items": {"type": "object"}, "description": "List of call records for fraud analysis"},
                     "analysis_window": {"type": "string", "description": "Time window for analysis (default: 1h)"},
                     "threshold_config": {"type": "object", "description": "Custom fraud detection thresholds"}
@@ -256,10 +264,12 @@ routes_config: dict[str, RouteConfig] = {
         service_name="Telecom SIP Intelligence",
         tags=["telecom", "billing", "cost-analysis", "premium"],
         extensions=declare_discovery_extension(
-            input={"type": "http", "call_records": [{"status": "success", "cost": 0.05}]},
+            input={"type": "http", "method": "POST", "call_records": [{"status": "success", "cost": 0.05}]},
             input_schema={
                 "type": "object",
                 "properties": {
+                    "type": {"type": "string", "const": "http"},
+                    "method": {"type": "string", "enum": ["POST"]},
                     "call_records": {"type": "array", "items": {"type": "object"}, "description": "Call records with duration, status, and cost"},
                     "analysis_period": {"type": "string", "description": "Analysis period: daily, weekly, monthly (default: daily)"},
                     "cost_threshold": {"type": "number", "description": "Cost alert threshold for budget monitoring"}
