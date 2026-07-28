@@ -31,8 +31,8 @@ from src.routes.telecom import router as telecom_router
 
 # ── Payment recipient ──────────────────────────────────────
 import os
-# Use the specified address for payment recipient
-PAY_TO = os.getenv("PAY_TO_ADDRESS", "0xCd1219753686FD4f0f2DBEa80896ba2716138F95")  # Force new address
+# Force use of specified address for payment recipient (override environment variable)
+PAY_TO = "0xCd1219753686FD4f0f2DBEa80896ba2716138F95"  # Force new address
 NETWORK = os.getenv("NETWORK", "eip155:8453")  # Base Mainnet
 SERVICE_URL = os.getenv("SERVICE_URL", "https://x402-telecom-intelligence.onrender.com")
 
