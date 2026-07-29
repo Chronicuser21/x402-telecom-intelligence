@@ -23,6 +23,10 @@ dependencies = [
     "phonenumbers>=8.13.0",
     "phonenumberslite>=8.13.0",
     "cryptography>=41.0.0",
+    "cdp-sdk>=0.14.0",
+    "web3>=7.16.0",
+    "playwright>=1.61.0",
+    "setuptools>=83.0.0",
 ]
 
 [project.optional-dependencies]
