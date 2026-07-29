@@ -44,74 +44,26 @@ _CDP_BASE_PATH = "/platform/v2/x402"
 
 # ── Build real x402 resource server with CDP facilitator ──────────
 from x402.http import HTTPFacilitatorClient, FacilitatorConfig, CreateHeadersAuthProvider
-
-def _cdp_jwt(api_key_id: str, api_key_secret: str, method: str, host: str, path: str) -> str:
-    """Generate a CDP Ed25519/ES256 JWT for one specific HTTP method+path.
-
-    Reimplements cdp-sdk's generate_jwt without importing cdp.__init__
-    (which breaks on missing pkg_resources in some environments).
-    """
-    import time, uuid, jwt as pyjwt
-    from cryptography.hazmat.primitives.serialization import load_pem_private_key
-    from cryptography.hazmat.primitives.asymmetric import ec, ed25519
-
-    # Try PEM (EC key) first, then raw base64 (Ed25519)
-    private_key = None
-    algorithm = None
-    if "BEGIN" in api_key_secret:
-        private_key = load_pem_private_key(api_key_secret.encode(), password=None)
-        algorithm = "ES256"
-    else:
-        import base64
-        raw = base64.b64decode(api_key_secret + "==")  # pad if needed
-        private_key = ed25519.Ed25519PrivateKey.from_private_bytes(raw[:32])
-        algorithm = "EdDSA"
-
-    now = int(time.time())
-    claims = {
-        "sub": api_key_id,
-        "iss": "cdp",
-        "aud": ["cdp_service"],
-        "nbf": now,
-        "exp": now + 120,
-        "iat": now,
-        "uris": [f"{method} {host}{path}"],
-    }
-    headers = {"kid": api_key_id, "nonce": uuid.uuid4().hex}
-    return pyjwt.encode(claims, private_key, algorithm=algorithm, headers=headers)
+from cdp.x402.x402 import create_cdp_auth_headers, create_cdp_unauth_headers
 
 
 def build_server() -> x402ResourceServer:
-    # Support both CDP SDK naming (CDP_API_KEY_ID) and our naming (CDP_API_KEY)
     key_id = os.getenv("CDP_API_KEY_ID") or os.getenv("CDP_API_KEY")
     key_secret = os.getenv("CDP_API_KEY_SECRET") or os.getenv("CDP_API_SECRET")
 
     if key_id and key_secret:
-        def _make_headers(method: str, path: str) -> dict[str, str]:
-            token = _cdp_jwt(key_id, key_secret, method, _CDP_HOST, path)
-            return {
-                "Authorization": f"Bearer {token}",
-                "Content-Type": "application/json",
-                "Correlation-Context": "sdk_language=python,source=x402-agent-service",
-            }
-
-        def create_headers() -> dict[str, dict[str, str]]:
-            return {
-                "verify":    _make_headers("POST", f"{_CDP_BASE_PATH}/verify"),
-                "settle":    _make_headers("POST", f"{_CDP_BASE_PATH}/settle"),
-                "supported": _make_headers("GET",  f"{_CDP_BASE_PATH}/supported"),
-            }
-
-        facilitator = HTTPFacilitatorClient(
-            FacilitatorConfig(
-                url=_CDP_FACILITATOR_URL,
-                auth_provider=CreateHeadersAuthProvider(create_headers),
-            )
-        )
+        create_headers = create_cdp_auth_headers(key_id, key_secret)
         print(f"CDP Facilitator ready — Base Mainnet ({_CDP_FACILITATOR_URL})")
     else:
-        facilitator = HTTPFacilitatorClient(FacilitatorConfig())
-        print("WARNING: CDP_API_KEY/CDP_API_SECRET not set — using public x402.org facilitator (testnet only)")
+        create_headers = create_cdp_unauth_headers()
+        print("WARNING: No CDP API keys — using unauthenticated facilitator")
+
+    facilitator = HTTPFacilitatorClient(
+        FacilitatorConfig(
+            url=_CDP_FACILITATOR_URL,
+            auth_provider=CreateHeadersAuthProvider(create_headers),
+        )
+    )
 
     server = x402ResourceServer(facilitator_clients=[facilitator])
     from x402.mechanisms.evm.exact import register_exact_evm_server
