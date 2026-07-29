@@ -211,7 +211,15 @@ routes_config: dict[str, RouteConfig] = {
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    resource_server.initialize()
+    import asyncio, concurrent.futures
+    loop = asyncio.get_event_loop()
+    try:
+        await asyncio.wait_for(
+            loop.run_in_executor(None, resource_server.initialize),
+            timeout=10.0
+        )
+    except Exception as e:
+        print(f"WARNING: initialize() failed ({e}), continuing anyway")
     yield
 
 
