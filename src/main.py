@@ -75,12 +75,13 @@ resource_server = build_server()
 
 
 def _pay(price: str) -> PaymentOption:
-    """Shorthand for a standard USDC payment option on Base Sepolia."""
+    """Shorthand for a standard USDC payment option on Base Mainnet."""
     return PaymentOption(
         scheme="exact",
         pay_to=PAY_TO,
         price=price,
         network=NETWORK,
+        extra={"name": "USD Coin", "version": "2", "assetTransferMethod": "permit2"},
     )
 
 

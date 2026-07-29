@@ -3379,16 +3379,16 @@ wheels = [
 
 [[package]]
 name = "x402"
-version = "2.16.0"
+version = "2.17.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "nest-asyncio" },
     { name = "pydantic" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/4a/b1/05481caa039b5ccbcece8ea9836ba6859e289c0b34c79bf3aef5aa838599/x402-2.16.0.tar.gz", hash = "sha256:5656f8b3620105816bee4d2af73600b690b11fb77f0927d80694605d14ff483b", size = 2093990, upload-time = "2026-07-17T20:58:40.148Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/1f/dd/4924460c99b3de1c670b85e733b634b7832c938bbf394263687f44bceba7/x402-2.17.0.tar.gz", hash = "sha256:e6055a87c325e73a07952c5f359a03318f85802918db38130e200f4a9f356a38", size = 2094562, upload-time = "2026-07-27T20:36:36.021Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/92/40/c8fe06cbb7ae616c37c4fdaee581b043dbf0ed594477190cbf8bb1697fe8/x402-2.16.0-py3-none-any.whl", hash = "sha256:8d536571782111dd8781cd4cf36f3b88e4f0b5d17c39251a17b8e655313a89fb", size = 2226699, upload-time = "2026-07-17T20:58:38.595Z" },
+    { url = "https://files.pythonhosted.org/packages/1a/2b/d54473911146991821e3e893965e82b172fc99f80a164dfa031528b59d73/x402-2.17.0-py3-none-any.whl", hash = "sha256:871f5b9d316274e287ace675c0ce977c59c950d6bfa74570cb9809afbdfc8872", size = 2227466, upload-time = "2026-07-27T20:36:33.341Z" },
 ]
 
 [package.optional-dependencies]
@@ -3469,7 +3469,7 @@ requires-dist = [
     { name = "structlog", specifier = ">=24.0" },
     { name = "uvicorn", extras = ["standard"], specifier = ">=0.34.0" },
     { name = "web3", specifier = ">=7.16.0" },
-    { name = "x402", extras = ["evm", "extensions", "fastapi", "httpx"], specifier = ">=1.0.0" },
+    { name = "x402", extras = ["evm", "extensions", "fastapi", "httpx"], specifier = ">=2.17.0" },
 ]
 provides-extras = ["dev"]
 
