@@ -31,39 +31,88 @@ from src.routes.telecom import router as telecom_router
 
 # ── Payment recipient ──────────────────────────────────────
 import os
-# Force use of specified address for payment recipient (override environment variable)
-PAY_TO = "0xCd1219753686FD4f0f2DBEa80896ba2716138F95"  # Force new address
+
+PAY_TO = os.getenv("PAY_TO_ADDRESS", "0xD333941784201caC6C3c082D9BEef22EFefe4750")
 NETWORK = os.getenv("NETWORK", "eip155:8453")  # Base Mainnet
 SERVICE_URL = os.getenv("SERVICE_URL", "https://x402-telecom-intelligence.onrender.com")
 
+# ── CDP facilitator constants (Base Mainnet) ───────────────
+# https://docs.cdp.coinbase.com/x402/quickstart-for-sellers#facilitator-urls
+_CDP_FACILITATOR_URL = "https://api.cdp.coinbase.com/platform/v2/x402"
+_CDP_HOST = "api.cdp.coinbase.com"
+_CDP_BASE_PATH = "/platform/v2/x402"
 
 # ── Build real x402 resource server with CDP facilitator ──────────
-from x402.http import HTTPFacilitatorClient, FacilitatorConfig
+from x402.http import HTTPFacilitatorClient, FacilitatorConfig, CreateHeadersAuthProvider
+
+def _cdp_jwt(api_key_id: str, api_key_secret: str, method: str, host: str, path: str) -> str:
+    """Generate a CDP Ed25519/ES256 JWT for one specific HTTP method+path.
+
+    Reimplements cdp-sdk's generate_jwt without importing cdp.__init__
+    (which breaks on missing pkg_resources in some environments).
+    """
+    import time, uuid, jwt as pyjwt
+    from cryptography.hazmat.primitives.serialization import load_pem_private_key
+    from cryptography.hazmat.primitives.asymmetric import ec, ed25519
+
+    # Try PEM (EC key) first, then raw base64 (Ed25519)
+    private_key = None
+    algorithm = None
+    if "BEGIN" in api_key_secret:
+        private_key = load_pem_private_key(api_key_secret.encode(), password=None)
+        algorithm = "ES256"
+    else:
+        import base64
+        raw = base64.b64decode(api_key_secret + "==")  # pad if needed
+        private_key = ed25519.Ed25519PrivateKey.from_private_bytes(raw[:32])
+        algorithm = "EdDSA"
+
+    now = int(time.time())
+    claims = {
+        "sub": api_key_id,
+        "iss": "cdp",
+        "aud": ["cdp_service"],
+        "nbf": now,
+        "exp": now + 120,
+        "iat": now,
+        "uris": [f"{method} {host}{path}"],
+    }
+    headers = {"kid": api_key_id, "nonce": uuid.uuid4().hex}
+    return pyjwt.encode(claims, private_key, algorithm=algorithm, headers=headers)
+
 
 def build_server() -> x402ResourceServer:
-    # Use CDP facilitator for production (recommended by Coinbase)
-    # Requires CDP_API_KEY_ID and CDP_API_KEY_SECRET environment variables
-    cdp_key_id = os.getenv("CDP_API_KEY_ID", "")
-    cdp_key_secret = os.getenv("CDP_API_KEY_SECRET", "")
-    
-    if cdp_key_id and cdp_key_secret:
+    # Support both CDP SDK naming (CDP_API_KEY_ID) and our naming (CDP_API_KEY)
+    key_id = os.getenv("CDP_API_KEY_ID") or os.getenv("CDP_API_KEY")
+    key_secret = os.getenv("CDP_API_KEY_SECRET") or os.getenv("CDP_API_SECRET")
+
+    if key_id and key_secret:
+        def _make_headers(method: str, path: str) -> dict[str, str]:
+            token = _cdp_jwt(key_id, key_secret, method, _CDP_HOST, path)
+            return {
+                "Authorization": f"Bearer {token}",
+                "Content-Type": "application/json",
+                "Correlation-Context": "sdk_language=python,source=x402-agent-service",
+            }
+
+        def create_headers() -> dict[str, dict[str, str]]:
+            return {
+                "verify":    _make_headers("POST", f"{_CDP_BASE_PATH}/verify"),
+                "settle":    _make_headers("POST", f"{_CDP_BASE_PATH}/settle"),
+                "supported": _make_headers("GET",  f"{_CDP_BASE_PATH}/supported"),
+            }
+
         facilitator = HTTPFacilitatorClient(
             FacilitatorConfig(
-                url="https://api.cdp.coinbase.com/platform/v2/x402",
-                api_key_id=cdp_key_id,
-                api_key_secret=cdp_key_secret
+                url=_CDP_FACILITATOR_URL,
+                auth_provider=CreateHeadersAuthProvider(create_headers),
             )
         )
-        print(f"CDP Facilitator initialized successfully with API keys")
+        print(f"CDP Facilitator ready — Base Mainnet ({_CDP_FACILITATOR_URL})")
     else:
-        # Fallback to testnet facilitator for development
-        facilitator = HTTPFacilitatorClient(
-            FacilitatorConfig(
-                url="https://x402.org/facilitator"
-            )
-        )
-        print(f"Using testnet facilitator (no CDP API keys provided)")
-    
+        facilitator = HTTPFacilitatorClient(FacilitatorConfig())
+        print("WARNING: CDP_API_KEY/CDP_API_SECRET not set — using public x402.org facilitator (testnet only)")
+
     server = x402ResourceServer(facilitator_clients=[facilitator])
     from x402.mechanisms.evm.exact import register_exact_evm_server
     register_exact_evm_server(server, networks=[NETWORK])
@@ -83,57 +132,6 @@ def _pay(price: str) -> PaymentOption:
     )
 
 
-from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
-from starlette.requests import Request
-from starlette.responses import Response
-
-class DemoBypassMiddleware(BaseHTTPMiddleware):
-    async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
-        is_demo = request.headers.get("x-pay") == "demo" or request.headers.get("x-payment") == "demo"
-        
-        if is_demo:
-            path = request.url.path
-            # Demo bypass for paid tools (phone-normalize is free so doesn't need bypass)
-            if path in ("/api/v1/tools/sip-decode", "/api/v1/tools/call-diagnose", "/api/v1/tools/phone-info", "/api/v1/tools/fraud-detection", "/api/v1/tools/billing-intelligence"):
-                import json
-                from fastapi.responses import JSONResponse
-
-                body_bytes = await request.body()
-                payload = json.loads(body_bytes) if body_bytes else {}
-
-                if path == "/api/v1/tools/sip-decode":
-                    from src.routes.telecom import sip_decode, SipDecodeRequest
-                    req_obj = SipDecodeRequest(**payload)
-                    res_data = await sip_decode(req_obj)
-                    response = JSONResponse(content=res_data)
-                elif path == "/api/v1/tools/call-diagnose":
-                    from src.routes.telecom import call_diagnose, CallDiagnoseRequest
-                    req_obj = CallDiagnoseRequest(**payload)
-                    res_data = await call_diagnose(req_obj)
-                    response = JSONResponse(content=res_data)
-                elif path == "/api/v1/tools/phone-info":
-                    from src.routes.telecom import phone_info, PhoneInfoRequest
-                    req_obj = PhoneInfoRequest(**payload)
-                    res_data = await phone_info(req_obj)
-                    response = JSONResponse(content=res_data)
-                elif path == "/api/v1/tools/fraud-detection":
-                    from src.routes.telecom import fraud_detection, FraudDetectionRequest
-                    req_obj = FraudDetectionRequest(**payload)
-                    res_data = await fraud_detection(req_obj)
-                    response = JSONResponse(content=res_data)
-                elif path == "/api/v1/tools/billing-intelligence":
-                    from src.routes.telecom import billing_intelligence, BillingIntelligenceRequest
-                    req_obj = BillingIntelligenceRequest(**payload)
-                    res_data = await billing_intelligence(req_obj)
-                    response = JSONResponse(content=res_data)
-
-                if is_demo:
-                    response.headers["x-payment-received"] = "demo"
-                    response.headers["x-payment-mode"] = "demo"
-                return response
-
-        return await call_next(request)
-
 # ── Routes config — typed RouteConfig with Bazaar discovery ──
 routes_config: dict[str, RouteConfig] = {
     # phone-normalize is completely free - not included in payment middleware
@@ -145,25 +143,17 @@ routes_config: dict[str, RouteConfig] = {
         service_name="Telecom SIP Intelligence",
         tags=["sip", "telecom", "parser", "advanced"],
         extensions=declare_discovery_extension(
-            input={"type": "http", "method": "POST", "rawSipMessage": "INVITE sip:bob@biloxi.com SIP/2.0..."},
+            input={"rawSipMessage": "INVITE sip:bob@biloxi.com SIP/2.0\r\nVia: SIP/2.0/UDP pc33.atlanta.com\r\nFrom: Alice"},
             input_schema={
                 "type": "object",
                 "properties": {
-                    "type": {"type": "string", "const": "http"},
-                    "method": {"type": "string", "enum": ["POST"]},
-                    "rawSipMessage": {"type": "string", "description": "Raw SIP header string content"}
+                    "rawSipMessage": {"type": "string", "description": "Raw SIP message string"}
                 },
-                "required": ["type", "method", "rawSipMessage"],
+                "required": ["rawSipMessage"],
             },
             body_type="json",
             output=OutputConfig(
-                example={
-                    "status": "success",
-                    "data": {
-                        "method": "INVITE",
-                        "headers": {"From": "Alice", "To": "Bob"}
-                    }
-                }
+                example={"status": "success", "data": {"method": "INVITE", "headers": {"From": "Alice", "To": "Bob"}}}
             )
         )
     ),
@@ -176,25 +166,17 @@ routes_config: dict[str, RouteConfig] = {
         service_name="Telecom SIP Intelligence",
         tags=["forensics", "voip", "debug", "premium"],
         extensions=declare_discovery_extension(
-            input={"type": "http", "method": "POST", "sipTrace": "INVITE ... \nSIP/2.0 487 Request Terminated"},
+            input={"sipTrace": "INVITE sip:alice@atlanta.com SIP/2.0\nSIP/2.0 487 Request Terminated"},
             input_schema={
                 "type": "object",
                 "properties": {
-                    "type": {"type": "string", "const": "http"},
-                    "method": {"type": "string", "enum": ["POST"]},
-                    "sipTrace": {"type": "string", "description": "Sequential SIP trace lines tied to a singular Call-ID"}
+                    "sipTrace": {"type": "string", "description": "Sequential SIP trace lines for a single Call-ID"}
                 },
-                "required": ["type", "method", "sipTrace"],
+                "required": ["sipTrace"],
             },
             body_type="json",
             output=OutputConfig(
-                example={
-                    "status": "success",
-                    "data": {
-                        "hypotheses": ["Normal user hangup sequence encountered"],
-                        "remediation": "No infrastructure fix required"
-                    }
-                }
+                example={"status": "success", "data": {"hypotheses": ["Normal user hangup"], "remediation": "No fix required"}}
             )
         )
     ),
@@ -207,95 +189,68 @@ routes_config: dict[str, RouteConfig] = {
         service_name="Telecom SIP Intelligence",
         tags=["telecom", "phone", "carrier", "intelligence"],
         extensions=declare_discovery_extension(
-            input={"type": "http", "method": "POST", "phone_number": "+14155552671", "region": "US"},
+            input={"phone_number": "+14155552671", "region": "US"},
             input_schema={
                 "type": "object",
                 "properties": {
-                    "type": {"type": "string", "const": "http"},
-                    "method": {"type": "string", "enum": ["POST"]},
-                    "phone_number": {"type": "string", "description": "Raw phone number string"},
+                    "phone_number": {"type": "string", "description": "Phone number to look up"},
                     "region": {"type": "string", "description": "ISO country code hint (default: US)"}
                 },
-                "required": ["type", "method", "phone_number"],
+                "required": ["phone_number"],
             },
             body_type="json",
             output=OutputConfig(
-                example={
-                    "status": "success",
-                    "phone_analysis": {
-                        "e164": "+14155552671",
-                        "line_type": "MOBILE",
-                        "carrier": {"name": "Mobile Carrier (US/CA)", "type": "mobile"}
-                    }
-                }
+                example={"status": "success", "phone_analysis": {"e164": "+14155552671", "line_type": "MOBILE", "carrier": {"name": "Mobile Carrier (US/CA)", "type": "mobile"}}}
             )
         )
     ),
 
     "POST /api/v1/tools/fraud-detection": RouteConfig(
-        accepts=_pay("$0.03"),  # Premium Plus - advanced fraud analysis
+        accepts=_pay("$0.03"),
         resource="https://x402-telecom-intelligence.onrender.com/api/v1/tools/fraud-detection",
         description="Advanced fraud detection for call patterns. Detect suspicious call patterns, spikes, misroutes, and anomalies. Essential for NOC agents preventing toll fraud and revenue sharing abuse.",
         mime_type="application/json",
         service_name="Telecom SIP Intelligence",
         tags=["telecom", "fraud", "security", "premium-plus"],
         extensions=declare_discovery_extension(
-            input={"type": "http", "method": "POST", "call_patterns": [{"status": "success", "destination": "+1234567890"}]},
+            input={"call_patterns": [{"status": "success", "destination": "+1234567890", "duration_s": 60}]},
             input_schema={
                 "type": "object",
                 "properties": {
-                    "type": {"type": "string", "const": "http"},
-                    "method": {"type": "string", "enum": ["POST"]},
                     "call_patterns": {"type": "array", "items": {"type": "object"}, "description": "List of call records for fraud analysis"},
                     "analysis_window": {"type": "string", "description": "Time window for analysis (default: 1h)"},
-                    "threshold_config": {"type": "object", "description": "Custom fraud detection thresholds"}
+                    "threshold_config": {"type": "object", "description": "Custom fraud detection thresholds"},
                 },
-                "required": ["type", "method", "call_patterns"],
+                "required": ["call_patterns"],
             },
             body_type="json",
             output=OutputConfig(
-                example={
-                    "status": "success",
-                    "fraud_analysis": {
-                        "risk_level": "low",
-                        "risk_score": 0,
-                        "indicators": []
-                    }
-                }
+                example={"status": "success", "fraud_analysis": {"risk_level": "low", "risk_score": 0, "indicators": []}}
             )
         )
     ),
 
     "POST /api/v1/tools/billing-intelligence": RouteConfig(
-        accepts=_pay("$0.02"),  # Premium - cost analysis
+        accepts=_pay("$0.02"),
         resource="https://x402-telecom-intelligence.onrender.com/api/v1/tools/billing-intelligence",
         description="Billing intelligence and cost impact analysis. Summarize call outcomes, failed attempts, and cost impacting issues. Essential for NOC agents optimizing telecom costs and identifying revenue loss.",
         mime_type="application/json",
         service_name="Telecom SIP Intelligence",
         tags=["telecom", "billing", "cost-analysis", "premium"],
         extensions=declare_discovery_extension(
-            input={"type": "http", "method": "POST", "call_records": [{"status": "success", "cost": 0.05}]},
+            input={"call_records": [{"status": "success", "cost": 0.05, "duration_s": 120}]},
             input_schema={
                 "type": "object",
                 "properties": {
-                    "type": {"type": "string", "const": "http"},
-                    "method": {"type": "string", "enum": ["POST"]},
                     "call_records": {"type": "array", "items": {"type": "object"}, "description": "Call records with duration, status, and cost"},
                     "analysis_period": {"type": "string", "description": "Analysis period: daily, weekly, monthly (default: daily)"},
-                    "cost_threshold": {"type": "number", "description": "Cost alert threshold for budget monitoring"}
+                    "cost_threshold": {"type": "number", "description": "Cost alert threshold for budget monitoring"},
                 },
-                "required": ["type", "method", "call_records"],
+                "required": ["call_records"],
             },
             body_type="json",
             output=OutputConfig(
-                example={
-                    "status": "success",
-                    "billing_analysis": {
-                        "total_cost": 100.50,
-                        "success_rate": "95.5%",
-                        "cost_issues": []
-                    }
-                }
+                example={"status": "success", "billing_analysis": {"total_cost": 100.50, "success_rate": "95.5%", "cost_issues": []}}
             )
         )
     ),
@@ -320,12 +275,6 @@ app.include_router(telecom_router)
 # Serve static files
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# Landing page (public, no auth required)
-@app.get("/")
-async def landing_page():
-    from fastapi.responses import FileResponse
-    return FileResponse("static/landing.html")
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -336,15 +285,12 @@ app.add_middleware(
 
 app.add_middleware(ObservabilityMiddleware)
 
-# Payment middleware (registered last, executed first) - only applies if not free tier
+# Payment middleware — enforces x402 on all routes_config entries
 app.add_middleware(
     PaymentMiddlewareASGI,
     server=resource_server,
     routes=routes_config,
 )
-
-# Demo bypass middleware (registered first, executed last) - for demo testing
-app.add_middleware(DemoBypassMiddleware)
 
 
 # ── Discovery endpoints ──────────────────────────────────
@@ -352,17 +298,12 @@ app.add_middleware(DemoBypassMiddleware)
 @app.get("/", response_class=FileResponse, tags=["Discovery"])
 async def service_root():
     """Serve the main landing page."""
-    landing_path = Path(__file__).parent.parent / "static" / "index.html"
-    if landing_path.exists():
-        return FileResponse(landing_path, media_type="text/html")
-    # Fallback to landing.html if index.html doesn't exist
-    landing_path = Path(__file__).parent.parent / "static" / "landing.html"
-    if landing_path.exists():
-        return FileResponse(landing_path, media_type="text/html")
-    # Fallback to simple info if no HTML files exist
+    for name in ("index.html", "landing.html"):
+        p = Path(__file__).parent.parent / "static" / name
+        if p.exists():
+            return FileResponse(p, media_type="text/html")
     return JSONResponse(content={
         "name": "Telecom SIP Intelligence for AI Agents",
-        "description": "Specialized telecom/SIP intelligence tools for AI agents in NOC operations, VoIP monitoring, and telecom automation.",
         "endpoints": {
             "health": "/api/v1/tools/health",
             "catalog": "/api/v1/tools/list-products",
@@ -371,10 +312,10 @@ async def service_root():
             "call_diagnose": "/api/v1/tools/call-diagnose ($0.02)",
             "phone_info": "/api/v1/tools/phone-info ($0.005)",
             "billing_intelligence": "/api/v1/tools/billing-intelligence ($0.02)",
-            "fraud_detection": "/api/v1/tools/fraud-detection ($0.03)"
+            "fraud_detection": "/api/v1/tools/fraud-detection ($0.03)",
         },
         "documentation": "/docs",
-        "x402_manifest": "/x402.json"
+        "x402_manifest": "/x402.json",
     })
 
 
@@ -396,29 +337,6 @@ async def well_known_manifest():
     return JSONResponse(content={"error": "manifest not found"}, status_code=404)
 
 
-@app.get("/", response_class=FileResponse, tags=["Discovery"])
-async def landing_page():
-    """Serve the main landing page."""
-    landing_path = Path(__file__).parent.parent / "static" / "index.html"
-    if landing_path.exists():
-        return FileResponse(landing_path, media_type="text/html")
-    # Fallback to simple info if landing page doesn't exist
-    return JSONResponse(content={
-        "name": "Telecom SIP Intelligence for AI Agents",
-        "description": "Specialized telecom/SIP intelligence tools for AI agents in NOC operations, VoIP monitoring, and telecom automation.",
-        "endpoints": {
-            "health": "/api/v1/tools/health",
-            "catalog": "/api/v1/tools/list-products",
-            "phone_normalize": "/api/v1/tools/phone-normalize (FREE)",
-            "sip_decode": "/api/v1/tools/sip-decode ($0.01)",
-            "call_diagnose": "/api/v1/tools/call-diagnose ($0.02)",
-            "phone_info": "/api/v1/tools/phone-info ($0.005)"
-        },
-        "documentation": "/docs",
-        "x402_manifest": "/x402.json"
-    })
-
-
 @app.get("/.well-known/x402", tags=["Discovery"])
 async def well_known_x402():
     """x402 discovery path without .json suffix (used by crawlers and agents)."""
@@ -430,38 +348,12 @@ async def well_known_x402():
 
 @app.get("/favicon.ico", include_in_schema=False)
 async def favicon():
-    """Serve favicon to suppress browser 404s."""
-    favicon_path = Path(__file__).parent.parent / "static" / "favicon.ico"
-    if favicon_path.exists():
-        return FileResponse(favicon_path, media_type="image/x-icon")
-    return Response(status_code=204)
-
-
-@app.get("/robots.txt", include_in_schema=False)
-async def robots():
-    """Standard robots.txt for crawlers."""
-    robots_path = Path(__file__).parent.parent / "static" / "robots.txt"
-    if robots_path.exists():
-        return FileResponse(robots_path, media_type="text/plain")
-    return Response(content="User-agent: *\nAllow: /\n", media_type="text/plain")
-
-
-@app.get("/sitemap.xml", include_in_schema=False)
-async def sitemap():
-    """XML sitemap for search engines."""
-    sitemap_path = Path(__file__).parent.parent / "static" / "sitemap.xml"
-    if sitemap_path.exists():
-        return FileResponse(sitemap_path, media_type="application/xml")
-    return Response(status_code=404)
-
-
-@app.get("/favicon.ico", include_in_schema=False)
-async def favicon():
     """Serve favicon."""
-    favicon_path = Path(__file__).parent.parent / "static" / "favicon.svg"
-    if favicon_path.exists():
-        return FileResponse(favicon_path, media_type="image/svg+xml")
-    return Response(status_code=404)
+    for name, mime in (("favicon.ico", "image/x-icon"), ("favicon.svg", "image/svg+xml")):
+        p = Path(__file__).parent.parent / "static" / name
+        if p.exists():
+            return FileResponse(p, media_type=mime)
+    return Response(status_code=204)
 
 
 @app.get("/llms.txt", include_in_schema=False)
@@ -499,9 +391,9 @@ async def list_services():
         })
     return {
         "name": "Telecom Intelligence Forensics Gateway",
-        "description": "SIP decode, phone normalization, and VoIP call diagnostics — paid via x402 USDC micropayments on Base Sepolia.",
+        "description": "SIP decode, phone normalization, and VoIP call diagnostics — paid via x402 USDC micropayments on Base Mainnet.",
         "version": "1.0.0",
         "network": NETWORK,
-        "facilitator": "https://x402.org/facilitator",
+        "facilitator": _CDP_FACILITATOR_URL,
         "endpoints": endpoints,
     }
